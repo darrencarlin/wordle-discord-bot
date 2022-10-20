@@ -2,9 +2,9 @@
 
 This discord bot tracks users wordle entries for a given discord channel.
 
-It picks up the score from the first line of the share snippet you can copy when you complete a wordle on the [New York Times](https://www.nytimes.com/games/wordle/index.html). 
+It picks up the score from the first line of the share snippet you can copy when you complete a wordle on the [New York Times](https://www.nytimes.com/games/wordle/index.html).
 
-It uses ```4/6``` from the screenshot below.
+It uses `4/6` from the screenshot below.
 
 <img width="215" alt="Screen Shot 2022-10-19 at 10 43 15 PM" src="https://user-images.githubusercontent.com/30006190/196843865-4937c2b2-ad55-4c0a-9641-a418d4584484.png">
 
@@ -42,4 +42,32 @@ The bot has 2 slash commands.
 
 <img width="325" alt="Screen Shot 2022-10-19 at 10 59 37 PM" src="https://user-images.githubusercontent.com/30006190/196846130-05d7cff4-73ef-4df5-9d36-7885672bd035.png">
 
+## How to install
 
+To install this bot on your server.
+
+1. Setup discord bot/application and get the token, give the bot the following scopes and permissions.
+
+   - bot
+   - applications.commands
+   - Administrator
+
+2. Setup a Google Firebase account and activate your firestore instance.
+3. Clone this repo and add the following env variables.
+
+### ENV variables
+
+```
+DISCORD_TOKEN=xxx
+CLIENT_ID=xxx
+GUILD_ID=xxx
+WORDLE_CHANNEL=xxx
+FIREBASE_API_KEY=xxx
+FIREBASE_AUTH_DOMAIN=xxx
+FIREBASE_PROJECT_ID=xxx
+FIREBASE_STORAGE_BUCKET=xxx
+FIREBASE_MESSAGING_SENDER_ID=xxx
+FIREBASE_APP_ID=xxx
+```
+
+4. Deploy the bot to a server of your choice (make sure you use the files in the dist folder)
