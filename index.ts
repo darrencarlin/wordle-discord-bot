@@ -1,45 +1,51 @@
 import dotenv from "dotenv";
 dotenv.config();
 import { REST } from "@discordjs/rest";
-import { Client, GatewayIntentBits, Routes } from "discord.js";
+import {
+  Client,
+  GatewayIntentBits,
+  Interaction,
+  Routes,
+  TextChannel,
+} from "discord.js";
 import { collection, setDoc, getDocs, doc, getDoc } from "firebase/firestore";
-import LeaderboardCommand from "./commands/leaderboard.js";
-import StatsCommand from "./commands/stats.js";
-import { db } from "./util/firebase.js";
+import LeaderboardCommand from "./commands/leaderboard";
+import StatsCommand from "./commands/stats";
+import { db } from "./util/firebase";
+import { User, Wordles } from "./util/types";
 
-const wordleChannel = process.env.WORDLE_CHANNEL;
+const wordleChannel = process.env.WORDLE_CHANNEL!;
 
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
-    ,
   ],
 });
 
-const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
+const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
 
-client.login(process.env.DISCORD_TOKEN);
-
-client.on("ready", () => console.log(`${client.user.tag} has logged in!`));
+client.on("ready", () =>
+  console.log(`${client?.user?.username} has logged in!`)
+);
 
 client.on("messageCreate", async (message) => {
   // Ignore if it's a bot message
   if (message.author.bot || !message.content.startsWith("Wordle ")) {
     return;
   }
-  const channel = client.channels.cache.get(wordleChannel);
+  const channel = client.channels.cache.get(wordleChannel) as TextChannel;
   const channelId = message.channelId;
 
   // If the message is in the wordle channel
   if (channelId === wordleChannel) {
-    const wordles = [];
+    const wordles: Wordles = [];
     // Get users from database
     const usersRef = collection(db, "users");
     const snapshot = await getDocs(usersRef);
     snapshot.forEach((doc) => {
-      wordles.push(doc.data());
+      wordles.push(doc.data() as User);
     });
 
     // Get the message content
@@ -101,31 +107,31 @@ client.on("messageCreate", async (message) => {
       // Update the database
       await setDoc(doc(db, "users", userId), userData);
     } else {
-      await channel.send(
+      await channel?.send(
         "That score seems to be invalid, make sure it follows the form of `X/6` or `1-6/6`"
       );
     }
-
-    // Return the leaderboard
-
-    // send a message to channel
   }
 });
 
-client.on("interactionCreate", async (interaction) => {
-  if (interaction.isChatInputCommand()) {
-    console.log(interaction);
+client.on("interactionCreate", async (interaction: Interaction) => {
+  // Get the channel
+  const channel = client.channels.cache.get(wordleChannel) as TextChannel;
 
+  if (interaction.isChatInputCommand()) {
+    console.log("interaction - input");
     const commandName = interaction.commandName;
     const userId = interaction.user.id;
 
+    console.log(interaction.user);
+
     if (commandName === "leaderboard") {
-      const wordles = [];
+      const wordles: Wordles = [];
       // Get users from database
       const usersRef = collection(db, "users");
       const snapshot = await getDocs(usersRef);
       snapshot.forEach((doc) => {
-        wordles.push(doc.data());
+        wordles.push(doc.data() as User);
       });
 
       // Sort the leaderboard by percentage completed, then by average guesses, then by total wordles
@@ -139,6 +145,8 @@ client.on("interactionCreate", async (interaction) => {
         return b.percentageCompleted - a.percentageCompleted;
       });
 
+      // Build the leaderboard message
+
       let str = "";
 
       leaderboard.forEach((user, index) => {
@@ -149,31 +157,29 @@ client.on("interactionCreate", async (interaction) => {
         } guesses per game.\n`;
       });
 
+      // Send the leaderboard message
       await interaction.reply({
         content: str,
-        fetchReply: true,
       });
-      return;
     } else if (commandName === "stats") {
+      // Get the user data
       const docRef = doc(db, "users", userId);
       const docSnap = await getDoc(docRef);
 
+      // If the user exists
       if (docSnap.exists()) {
         const data = docSnap.data();
 
+        // Build the stats message
         const str = `**Stats for ${data.usernames[0]}**\n\nTotal Wordles: ${data.totalWordles}\nWordles Completed: ${data.wordlesCompleted}\nWordles Failed: ${data.wordlesFailed}\nPercentage Completed: ${data.percentageCompleted}%\nPercentage Failed: ${data.percentageFailed}%\nAverage Guesses Per Wordle: ${data.averageGuesses}`;
-
+        // Send the stats message
         await interaction.reply({
           content: str,
-          fetchReply: true,
         });
-        return;
       } else {
         await interaction.reply({
           content: "You have not played any wordles yet!",
-          fetchReply: true,
         });
-        return;
       }
     }
   }
@@ -182,11 +188,10 @@ client.on("interactionCreate", async (interaction) => {
 async function main() {
   const commands = [LeaderboardCommand, StatsCommand];
   try {
-    console.log("Started refreshing application (/) commands.");
     await rest.put(
       Routes.applicationGuildCommands(
-        process.env.CLIENT_ID,
-        process.env.GUILD_ID
+        process.env.CLIENT_ID!,
+        process.env.GUILD_ID!
       ),
       {
         body: commands,
