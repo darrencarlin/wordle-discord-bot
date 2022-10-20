@@ -42,6 +42,12 @@ The bot has 2 slash commands.
 
 <img width="325" alt="Screen Shot 2022-10-19 at 10 59 37 PM" src="https://user-images.githubusercontent.com/30006190/196846130-05d7cff4-73ef-4df5-9d36-7885672bd035.png">
 
+## Planned/Potential New Features
+
+- Better leaderboard sorting
+- Streak tracking `{currentStreak: 0, longestStreak: 0, lastGame: ""}`
+- Best score tracking `bestScore: 0`
+
 ## How to install
 
 To install this bot on your server.
