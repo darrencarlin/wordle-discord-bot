@@ -47,6 +47,7 @@ The bot has 2 slash commands.
 - Better leaderboard sorting
 - Streak tracking `{currentStreak: 0, longestStreak: 0, lastGame: ""}`
 - Best score tracking `bestScore: 0`
+- General score tracking ```{scores: [0,0,0,1,0,0]}```
 
 ## How to install
 
