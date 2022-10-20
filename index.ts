@@ -115,15 +115,9 @@ client.on("messageCreate", async (message) => {
 });
 
 client.on("interactionCreate", async (interaction: Interaction) => {
-  // Get the channel
-  const channel = client.channels.cache.get(wordleChannel) as TextChannel;
-
   if (interaction.isChatInputCommand()) {
-    console.log("interaction - input");
     const commandName = interaction.commandName;
     const userId = interaction.user.id;
-
-    console.log(interaction.user);
 
     if (commandName === "leaderboard") {
       const wordles: Wordles = [];

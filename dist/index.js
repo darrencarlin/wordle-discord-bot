@@ -133,16 +133,13 @@ client.on("messageCreate", function (message) { return __awaiter(void 0, void 0,
     });
 }); });
 client.on("interactionCreate", function (interaction) { return __awaiter(void 0, void 0, void 0, function () {
-    var channel, commandName, userId, wordles_2, usersRef, snapshot, leaderboard, str_1, docRef, docSnap, data, str;
+    var commandName, userId, wordles_2, usersRef, snapshot, leaderboard, str_1, docRef, docSnap, data, str;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                channel = client.channels.cache.get(wordleChannel);
                 if (!interaction.isChatInputCommand()) return [3 /*break*/, 8];
-                console.log("interaction - input");
                 commandName = interaction.commandName;
                 userId = interaction.user.id;
-                console.log(interaction.user);
                 if (!(commandName === "leaderboard")) return [3 /*break*/, 3];
                 wordles_2 = [];
                 usersRef = (0, firestore_1.collection)(firebase_1.db, "users");
