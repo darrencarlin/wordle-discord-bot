@@ -188,15 +188,9 @@ client.on("interactionCreate", async (interaction: Interaction) => {
 async function main() {
   const commands = [LeaderboardCommand, StatsCommand, SetChannelCommand];
   try {
-    await rest.put(
-      Routes.applicationGuildCommands(
-        process.env.CLIENT_ID!,
-        process.env.GUILD_ID!
-      ),
-      {
-        body: commands,
-      }
-    );
+    await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
+      body: commands,
+    });
     client.login(process.env.DISCORD_TOKEN);
   } catch (err) {
     console.log(err);
