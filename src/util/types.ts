@@ -10,4 +10,9 @@ export interface User {
   percentageFailed: number;
   completionGuesses: number[];
   averageGuesses: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastGameDate: string;
+  bestScore: number;
+  scores: number[];
 }

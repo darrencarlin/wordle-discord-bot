@@ -1,20 +1,25 @@
-import dotenv from "dotenv";
-dotenv.config();
 import { REST } from "@discordjs/rest";
-import {
-  Client,
-  GatewayIntentBits,
-  Interaction,
-  Routes,
-  TextChannel,
-} from "discord.js";
-import { collection, setDoc, getDocs, doc, getDoc } from "firebase/firestore";
+import { Client, GatewayIntentBits, Interaction, Routes } from "discord.js";
+import dotenv from "dotenv";
 import LeaderboardCommand from "./commands/leaderboard";
+import SetChannelCommand from "./commands/setChannel";
 import StatsCommand from "./commands/stats";
-import { db } from "./util/firebase";
-import { User, Wordles } from "./util/types";
-
-const wordleChannel = process.env.WORDLE_CHANNEL!;
+import {
+  createGuild,
+  deleteGuild,
+  generateLeaderboard,
+  generateUserStats,
+  getGuildUsers,
+  getUserData,
+  getWordle,
+  getWordleChannel,
+  getWordles,
+  isValidScore,
+  isValidStreakTime,
+  setWordleChannel,
+  updateGuildUsers,
+} from "./util/functions";
+dotenv.config();
 
 const client = new Client({
   intents: [
@@ -26,56 +31,46 @@ const client = new Client({
 
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
 
-client.on("ready", () =>
-  console.log(`${client?.user?.username} has logged in!`)
-);
+client.on("ready", () => {
+  console.log(`${client?.user?.username} has logged in!`);
+});
 
-client.on("messageCreate", async (message) => {
-  // Ignore if it's a bot message
-  if (message.author.bot || !message.content.startsWith("Wordle ")) {
+client.on("guildCreate", async (guild) => {
+  console.log(`Joined guild ${guild.name}`);
+  await createGuild(guild.id, guild.name);
+});
+
+client.on("guildDelete", async (guild) => {
+  console.log(`Left guild ${guild.name}`);
+  await deleteGuild(guild.id);
+});
+
+client.on("messageCreate", async (c) => {
+  // Ignore if it's a bot message or just a regular message
+  if (c.author.bot || !c.content.startsWith("Wordle ")) {
     return;
   }
-  const channel = client.channels.cache.get(wordleChannel) as TextChannel;
-  const channelId = message.channelId;
+
+  // variable setup
+  const guildId = c.guildId;
+  const channelId = c.channelId;
+  const userId = c.author.id;
+  const username = c.author.username;
+
+  // TODO: store this ahead of time potentially to avoid multiple calls
+  const isWordleChannel = await getWordleChannel(guildId as string, channelId);
 
   // If the message is in the wordle channel
-  if (channelId === wordleChannel) {
-    const wordles: Wordles = [];
-    // Get users from database
-    const usersRef = collection(db, "users");
-    const snapshot = await getDocs(usersRef);
-    snapshot.forEach((doc) => {
-      wordles.push(doc.data() as User);
-    });
+  if (isWordleChannel) {
+    const wordles = await getGuildUsers(guildId as string);
 
-    // Get the message content
-    const content = message.content;
-    // Get the first line of the message
-    const firstLine = content.split("\n")[0];
-    // Get the score
-    const score = firstLine.substring(firstLine.length - 3);
-    // Regex to test score
-    const regex = /^([1-6]|X)+\/[1-6]+$/i;
-    // Test it
-    const isValidScore = regex.test(score);
+    const { isValid, score } = isValidScore(c.content);
 
-    if (isValidScore) {
+    if (isValid) {
       const [completed, total] = score.split("/");
 
-      const userId = message.author.id;
-      const username = message.author.username;
-      // Get the existing user data or create a new one
-      const userData = wordles.find((user) => user.userId === userId) ?? {
-        usernames: [username],
-        userId,
-        wordlesCompleted: 0,
-        wordlesFailed: 0,
-        totalWordles: 0,
-        percentageCompleted: 0,
-        percentageFailed: 0,
-        completionGuesses: [],
-        averageGuesses: 0,
-      };
+      // Get the existing user data or create and return a new one
+      const userData = getUserData(wordles, userId, username);
 
       // Check if username has been updated and add to array if so
       // safe guarding against username changes, render the last one in leaderboards
@@ -104,10 +99,42 @@ client.on("messageCreate", async (message) => {
           (userData.wordlesFailed / userData.totalWordles) * 100
         );
       }
-      // Update the database
-      await setDoc(doc(db, "users", userId), userData);
+
+      // calculate the streak using the last game date
+      const currentDate = new Date().toISOString();
+      const lastGameDate = userData.lastGameDate ?? "";
+      // We can change this up once everyone has a lastGameDate
+      const isValid =
+        lastGameDate !== "" ? isValidStreakTime(lastGameDate) : true;
+
+      if (isValid) {
+        userData.currentStreak++;
+        if (userData.currentStreak > userData.longestStreak) {
+          userData.longestStreak = userData.currentStreak;
+        }
+      }
+
+      if (!isValid) {
+        userData.currentStreak = 0;
+      }
+
+      // calculate the best score if it needs to be updated
+
+      if (Number(completed) < userData.bestScore || userData.bestScore === 0) {
+        userData.bestScore = Number(completed);
+      }
+
+      // update the scores array
+      if (Number(completed) !== NaN) {
+        userData.scores[Number(completed) - 1]++;
+      }
+
+      // update the last game date to today
+      userData.lastGameDate = currentDate;
+
+      await updateGuildUsers(guildId as string, userId, userData);
     } else {
-      await channel?.send(
+      await c.reply(
         "That score seems to be invalid, make sure it follows the form of `X/6` or `1-6/6`"
       );
     }
@@ -118,69 +145,48 @@ client.on("interactionCreate", async (interaction: Interaction) => {
   if (interaction.isChatInputCommand()) {
     const commandName = interaction.commandName;
     const userId = interaction.user.id;
+    const guildId = interaction.guildId;
 
-    if (commandName === "leaderboard") {
-      const wordles: Wordles = [];
-      // Get users from database
-      const usersRef = collection(db, "users");
-      const snapshot = await getDocs(usersRef);
-      snapshot.forEach((doc) => {
-        wordles.push(doc.data() as User);
-      });
-
-      // Sort the leaderboard by percentage completed, then by average guesses, then by total wordles
-      const leaderboard = wordles.sort((a, b) => {
-        if (a.percentageCompleted === b.percentageCompleted) {
-          if (a.averageGuesses === b.averageGuesses) {
-            return b.totalWordles - a.totalWordles;
-          }
-          return a.averageGuesses - b.averageGuesses;
-        }
-        return b.percentageCompleted - a.percentageCompleted;
-      });
-
-      // Build the leaderboard message
-
-      let str = "";
-
-      leaderboard.forEach((user, index) => {
-        str += `** #${index + 1} **. ${user.usernames[0]} - ${
-          user.percentageCompleted
-        }% completed / ${user.totalWordles} games total / average ${
-          user.averageGuesses
-        } guesses per game.\n`;
-      });
-
-      // Send the leaderboard message
-      await interaction.reply({
-        content: str,
-      });
-    } else if (commandName === "stats") {
-      // Get the user data
-      const docRef = doc(db, "users", userId);
-      const docSnap = await getDoc(docRef);
-
-      // If the user exists
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-
-        // Build the stats message
-        const str = `**Stats for ${data.usernames[0]}**\n\nTotal Wordles: ${data.totalWordles}\nWordles Completed: ${data.wordlesCompleted}\nWordles Failed: ${data.wordlesFailed}\nPercentage Completed: ${data.percentageCompleted}%\nPercentage Failed: ${data.percentageFailed}%\nAverage Guesses Per Wordle: ${data.averageGuesses}`;
-        // Send the stats message
-        await interaction.reply({
-          content: str,
-        });
+    if (commandName === "stats") {
+      const data = await getWordle(guildId as string, userId);
+      if (data) {
+        const stats = generateUserStats(data);
+        await interaction.reply(stats);
       } else {
         await interaction.reply({
           content: "You have not played any wordles yet!",
         });
       }
+
+      return;
+    }
+
+    if (commandName === "leaderboard") {
+      const wordles = await getWordles(guildId as string);
+      const leaderboard = generateLeaderboard(wordles);
+      await interaction.reply(leaderboard);
+
+      return;
+    }
+
+    if (commandName === "set-channel") {
+      const guildId = interaction.guildId;
+      const channelId = interaction.channelId;
+
+      if (guildId && channelId) {
+        await setWordleChannel(guildId, channelId);
+        await interaction.reply("Wordle channel set!");
+        return;
+      }
+      await interaction.reply("Oops, something went wrong. Please try again.");
+
+      return;
     }
   }
 });
 
 async function main() {
-  const commands = [LeaderboardCommand, StatsCommand];
+  const commands = [LeaderboardCommand, StatsCommand, SetChannelCommand];
   try {
     await rest.put(
       Routes.applicationGuildCommands(
