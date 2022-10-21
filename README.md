@@ -59,7 +59,7 @@ The bot has 3 slash commands.
 
 /stats displays the users stats
 
-<img width="325" alt="Screen Shot 2022-10-19 at 10 59 37 PM" src="https://user-images.githubusercontent.com/30006190/196846130-05d7cff4-73ef-4df5-9d36-7885672bd035.png">
+![ss](https://user-images.githubusercontent.com/30006190/197115519-0f03c5f7-e25e-49a4-83c4-d8cbdd86b1e3.png)
 
 ## Planned/Potential New Features
 
