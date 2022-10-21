@@ -32,7 +32,7 @@ It store the users scores and stats using Google Firestore with the following sc
 
 ```
 
-Each guild has it's own users collection in the database. which follws the below schema
+Each guild has it's own users collection in the database. which follows the below schema
 
 ```
 {
