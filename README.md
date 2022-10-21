@@ -39,7 +39,7 @@ Each guild has it's own users collection in the database. which follows the belo
   users: [User, User, User],
   channelId: "123456789",
   guildId: "123456789",
-  nam:e "my server",
+  name: "my server",
 }
 ```
 
@@ -65,7 +65,7 @@ The bot has 3 slash commands.
 
 - Purge a users data
 - Stop users from entering the same wordle twice and more than once a day
-- Better leaderboard sorting (Join positioning)
+- Better leaderboard sorting (Joint positioning)
 - ~~Streak tracking `{currentStreak: 0, longestStreak: 0, lastGame: ""}`~~
 - ~~Best score tracking `{bestScore: 0}`~~
 - ~~General score tracking `{scores: [0,0,0,1,0,0]}`~~
