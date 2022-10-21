@@ -22,17 +22,36 @@ It store the users scores and stats using Google Firestore with the following sc
     percentageFailed: 0,
     completionGuesses: [4],
     averageGuesses: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastGameDate: new Date().toISOString(),
+    bestScore: 0,
+    scores: [0, 0, 0, 0, 0, 0],
   },
 ];
 
 ```
 
+Each guild has it's own users collection in the database. which follws the below schema
+
+```
+{
+  users: [User, User, User],
+  channelId "123456789",
+  guildId "123456789",
+  name "my server",
+}
+```
+
 ## Slash Commands
 
-The bot has 2 slash commands.
+The bot has 3 slash commands.
 
+- /set-channel
 - /leaderboard
 - /stats
+
+/set-channel sets the channel to track wordle entries in. It will only track entries in this channel.
 
 /leaderboard displays a leaderboard that includes all users who have made an entry.
 
@@ -45,36 +64,6 @@ The bot has 2 slash commands.
 ## Planned/Potential New Features
 
 - Better leaderboard sorting
-- Streak tracking `{currentStreak: 0, longestStreak: 0, lastGame: ""}`
-- Best score tracking `{bestScore: 0}`
-- General score tracking `{scores: [0,0,0,1,0,0]}`
-
-## How to install
-
-To install this bot on your server.
-
-1. Setup discord bot/application and get the token, give the bot the following scopes and permissions.
-
-   - bot
-   - applications.commands
-   - Administrator
-
-2. Setup a Google Firebase account and activate your firestore instance.
-3. Clone this repo and add the following env variables.
-
-### ENV variables
-
-```
-DISCORD_TOKEN=xxx
-CLIENT_ID=xxx
-GUILD_ID=xxx
-WORDLE_CHANNEL=xxx
-FIREBASE_API_KEY=xxx
-FIREBASE_AUTH_DOMAIN=xxx
-FIREBASE_PROJECT_ID=xxx
-FIREBASE_STORAGE_BUCKET=xxx
-FIREBASE_MESSAGING_SENDER_ID=xxx
-FIREBASE_APP_ID=xxx
-```
-
-4. Deploy the bot to a server of your choice (make sure you use the files in the dist folder)
+- ~~Streak tracking `{currentStreak: 0, longestStreak: 0, lastGame: ""}`~~
+- ~~Best score tracking `{bestScore: 0}`~~
+- ~~General score tracking `{scores: [0,0,0,1,0,0]}`~~
