@@ -81,12 +81,7 @@ export const updateGuildUsers = async (
 
 export const getUserData = (wordles: User[], id: string, username: string) => {
   const user = wordles.find((user) => user.userId === id);
-
-  if (user) {
-    return user;
-  } else {
-    return USER(id, username);
-  }
+  return { ...USER(id, username), ...user };
 };
 
 export const isValidScore = (data: string) => {
@@ -143,6 +138,87 @@ export const generateUserStats = (stats: User) => {
   // Send the stats message
 
   return str;
+};
+
+export const completedToday = (lastGame: string) => {
+  if (lastGame == "") return false;
+  const currentDate = new Date();
+  const lastGameDate = new Date(lastGame);
+
+  return currentDate.getDate() === lastGameDate.getDate();
+};
+
+export const checkForNewUsername = (username: string, userData: User) => {
+  if (!userData.usernames.includes(username)) {
+    userData.usernames.push(username);
+  }
+  return userData;
+};
+
+export const completedWordle = (
+  completed: string,
+  total: string,
+  userData: User
+) => {
+  // If the user completed the wordle
+  if (Number(completed) <= Number(total)) {
+    userData.wordlesCompleted++;
+    userData.totalWordles++;
+    userData.percentageCompleted = Math.round(
+      (userData.wordlesCompleted / userData.totalWordles) * 100
+    );
+    userData.completionGuesses.push(Number(completed));
+    userData.averageGuesses = Math.round(
+      userData.completionGuesses.reduce((a, b) => a + b) /
+        userData.completionGuesses.length
+    );
+  }
+  // If the user failed the wordle
+  if (completed === "X") {
+    userData.wordlesFailed++;
+    userData.totalWordles++;
+    userData.percentageFailed = Math.round(
+      (userData.wordlesFailed / userData.totalWordles) * 100
+    );
+  }
+
+  return userData;
+};
+
+export const isValidStreak = (userData: User) => {
+  const currentDate = new Date().toISOString();
+  const lastGameDate = userData.lastGameDate ?? "";
+  // We can change this up once everyone has a lastGameDate
+  const isValid = lastGameDate !== "" ? isValidStreakTime(lastGameDate) : true;
+
+  if (isValid) {
+    userData.currentStreak++;
+    if (userData.currentStreak > userData.longestStreak) {
+      userData.longestStreak = userData.currentStreak;
+    }
+  }
+
+  if (!isValid) {
+    userData.currentStreak = 0;
+  }
+
+  // update the last game date to today
+  userData.lastGameDate = currentDate;
+
+  return userData;
+};
+
+export const calculateBestScore = (completed: string, userData: User) => {
+  if (Number(completed) < userData.bestScore || userData.bestScore === 0) {
+    userData.bestScore = Number(completed);
+  }
+
+  // update the scores array
+  if (Number(completed) !== NaN) {
+    userData.scores[Number(completed) - 1]++;
+  }
+
+  return userData;
 };
 
 // check if date is over 24 hours and less than 48 hours

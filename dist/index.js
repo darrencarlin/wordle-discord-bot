@@ -45,6 +45,7 @@ var dotenv_1 = __importDefault(require("dotenv"));
 var leaderboard_1 = __importDefault(require("./commands/leaderboard"));
 var setChannel_1 = __importDefault(require("./commands/setChannel"));
 var stats_1 = __importDefault(require("./commands/stats"));
+var constants_1 = require("./util/constants");
 var functions_1 = require("./util/functions");
 dotenv_1["default"].config();
 var client = new discord_js_1.Client({
@@ -84,13 +85,12 @@ client.on("guildDelete", function (guild) { return __awaiter(void 0, void 0, voi
     });
 }); });
 client.on("messageCreate", function (c) { return __awaiter(void 0, void 0, void 0, function () {
-    var guildId, channelId, userId, username, isWordleChannel, wordles, _a, isValid, score, _b, completed, total, userData, currentDate, lastGameDate, isValid_1;
-    var _c;
-    return __generator(this, function (_d) {
-        switch (_d.label) {
+    var guildId, channelId, userId, username, isWordleChannel, wordles, _a, isValid, score, _b, completed, total, userData;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
             case 0:
                 // Ignore if it's a bot message or just a regular message
-                if (c.author.bot || !c.content.startsWith("Wordle ")) {
+                if (c.author.bot || !c.content.trim().startsWith("Wordle ")) {
                     return [2 /*return*/];
                 }
                 guildId = c.guildId;
@@ -99,66 +99,35 @@ client.on("messageCreate", function (c) { return __awaiter(void 0, void 0, void 
                 username = c.author.username;
                 return [4 /*yield*/, (0, functions_1.getWordleChannel)(guildId, channelId)];
             case 1:
-                isWordleChannel = _d.sent();
-                if (!isWordleChannel) return [3 /*break*/, 6];
+                isWordleChannel = _c.sent();
+                if (!isWordleChannel) return [3 /*break*/, 8];
                 return [4 /*yield*/, (0, functions_1.getGuildUsers)(guildId)];
             case 2:
-                wordles = _d.sent();
+                wordles = _c.sent();
                 _a = (0, functions_1.isValidScore)(c.content), isValid = _a.isValid, score = _a.score;
-                if (!isValid) return [3 /*break*/, 4];
+                if (!isValid) return [3 /*break*/, 6];
                 _b = score.split("/"), completed = _b[0], total = _b[1];
                 userData = (0, functions_1.getUserData)(wordles, userId, username);
-                // Check if username has been updated and add to array if so
-                // safe guarding against username changes, render the last one in leaderboards
-                if (!userData.usernames.includes(username)) {
-                    userData.usernames.push(username);
-                }
-                // If the user completed the wordle
-                if (Number(completed) <= Number(total)) {
-                    userData.wordlesCompleted++;
-                    userData.totalWordles++;
-                    userData.percentageCompleted = Math.round((userData.wordlesCompleted / userData.totalWordles) * 100);
-                    userData.completionGuesses.push(Number(completed));
-                    userData.averageGuesses = Math.round(userData.completionGuesses.reduce(function (a, b) { return a + b; }) /
-                        userData.completionGuesses.length);
-                }
-                // If the user failed the wordle
-                if (completed === "X") {
-                    userData.wordlesFailed++;
-                    userData.totalWordles++;
-                    userData.percentageFailed = Math.round((userData.wordlesFailed / userData.totalWordles) * 100);
-                }
-                currentDate = new Date().toISOString();
-                lastGameDate = (_c = userData.lastGameDate) !== null && _c !== void 0 ? _c : "";
-                isValid_1 = lastGameDate !== "" ? (0, functions_1.isValidStreakTime)(lastGameDate) : true;
-                if (isValid_1) {
-                    userData.currentStreak++;
-                    if (userData.currentStreak > userData.longestStreak) {
-                        userData.longestStreak = userData.currentStreak;
-                    }
-                }
-                if (!isValid_1) {
-                    userData.currentStreak = 0;
-                }
-                // calculate the best score if it needs to be updated
-                if (Number(completed) < userData.bestScore || userData.bestScore === 0) {
-                    userData.bestScore = Number(completed);
-                }
-                // update the scores array
-                if (Number(completed) !== NaN) {
-                    userData.scores[Number(completed) - 1]++;
-                }
-                // update the last game date to today
-                userData.lastGameDate = currentDate;
-                return [4 /*yield*/, (0, functions_1.updateGuildUsers)(guildId, userId, userData)];
+                if (!(0, functions_1.completedToday)(userData.lastGameDate)) return [3 /*break*/, 4];
+                return [4 /*yield*/, c.reply((0, constants_1.COMPLETED_TODAY_TEXT)(userData.lastGameDate))];
             case 3:
-                _d.sent();
-                return [3 /*break*/, 6];
-            case 4: return [4 /*yield*/, c.reply("That score seems to be invalid, make sure it follows the form of `X/6` or `1-6/6`")];
+                _c.sent();
+                return [2 /*return*/];
+            case 4:
+                // various functions to update the user data
+                userData = (0, functions_1.checkForNewUsername)(username, userData);
+                userData = (0, functions_1.completedWordle)(completed, total, userData);
+                userData = (0, functions_1.isValidStreak)(userData);
+                userData = (0, functions_1.calculateBestScore)(completed, userData);
+                return [4 /*yield*/, (0, functions_1.updateGuildUsers)(guildId, userId, userData)];
             case 5:
-                _d.sent();
-                _d.label = 6;
-            case 6: return [2 /*return*/];
+                _c.sent();
+                return [3 /*break*/, 8];
+            case 6: return [4 /*yield*/, c.reply(constants_1.INVALID_SCORE_TEXT)];
+            case 7:
+                _c.sent();
+                _c.label = 8;
+            case 8: return [2 /*return*/];
         }
     });
 }); });
@@ -181,9 +150,7 @@ client.on("interactionCreate", function (interaction) { return __awaiter(void 0,
             case 2:
                 _a.sent();
                 return [3 /*break*/, 5];
-            case 3: return [4 /*yield*/, interaction.reply({
-                    content: "You have not played any wordles yet!"
-                })];
+            case 3: return [4 /*yield*/, interaction.reply(constants_1.NOT_PLAYED_TEXT)];
             case 4:
                 _a.sent();
                 _a.label = 5;
@@ -210,7 +177,7 @@ client.on("interactionCreate", function (interaction) { return __awaiter(void 0,
             case 11:
                 _a.sent();
                 return [2 /*return*/];
-            case 12: return [4 /*yield*/, interaction.reply("Oops, something went wrong. Please try again.")];
+            case 12: return [4 /*yield*/, interaction.reply(constants_1.SOMETHING_WENT_WRONG_TEXT)];
             case 13:
                 _a.sent();
                 return [2 /*return*/];
