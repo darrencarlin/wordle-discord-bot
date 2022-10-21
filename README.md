@@ -63,7 +63,9 @@ The bot has 3 slash commands.
 
 ## Planned/Potential New Features
 
-- Better leaderboard sorting
+- Purge a users data
+- Stop users from entering the same wordle twice and more than once a day
+- Better leaderboard sorting (Join positioning)
 - ~~Streak tracking `{currentStreak: 0, longestStreak: 0, lastGame: ""}`~~
 - ~~Best score tracking `{bestScore: 0}`~~
 - ~~General score tracking `{scores: [0,0,0,1,0,0]}`~~
