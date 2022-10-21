@@ -37,9 +37,9 @@ Each guild has it's own users collection in the database. which follows the belo
 ```
 {
   users: [User, User, User],
-  channelId "123456789",
-  guildId "123456789",
-  name "my server",
+  channelId: "123456789",
+  guildId: "123456789",
+  nam:e "my server",
 }
 ```
 
