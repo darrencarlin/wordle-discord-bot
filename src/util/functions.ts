@@ -1,6 +1,5 @@
 // Firebase functions
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -98,10 +97,18 @@ export const isValidScore = (data: string) => {
 
 export const generateLeaderboard = (wordles: User[]) => {
   let str = "";
-  // Sort the leaderboard by percentage completed, then by average guesses, then by total wordles
+
+  // Sort the leaderboard by percentageCompleted if the totalWordles are the same, then by averageGuesses, then by totalWordles, then by currentStreak, then by bestScore.
+
   const leaderboard = wordles.sort((a, b) => {
     if (a.percentageCompleted === b.percentageCompleted) {
       if (a.averageGuesses === b.averageGuesses) {
+        if (a.totalWordles === b.totalWordles) {
+          if (a.currentStreak === b.currentStreak) {
+            return b.bestScore - a.bestScore;
+          }
+          return b.currentStreak - a.currentStreak;
+        }
         return b.totalWordles - a.totalWordles;
       }
       return a.averageGuesses - b.averageGuesses;
