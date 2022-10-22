@@ -47,7 +47,7 @@ export const setWordleChannel = async (id: string, channelId: string) => {
   );
 };
 
-export const getWordleChannel = async (id: string, channelId: string) => {
+export const getGuildWordleChannel = async (id: string, channelId: string) => {
   const docRef = doc(db, "guilds", id);
   const docSnap = await getDoc(docRef);
   if (docSnap.exists()) {
@@ -57,7 +57,7 @@ export const getWordleChannel = async (id: string, channelId: string) => {
   }
 };
 
-export const getGuildUsers = async (id: string) => {
+export const getGuildWordles = async (id: string) => {
   const usersSubcollection = collection(db, "guilds", id, "users");
   const usersSnapshot = await getDocs(usersSubcollection);
   const wordles: User[] = [];
@@ -67,7 +67,7 @@ export const getGuildUsers = async (id: string) => {
   return wordles ?? [];
 };
 
-export const updateGuildUsers = async (
+export const updateGuildUserData = async (
   id: string,
   userId: string,
   userData: User
@@ -78,12 +78,16 @@ export const updateGuildUsers = async (
 
 // Discord bot functions
 
-export const getUserData = (wordles: User[], id: string, username: string) => {
+export const getUserWordleData = (
+  wordles: User[],
+  id: string,
+  username: string
+) => {
   const user = wordles.find((user) => user.userId === id);
   return { ...USER(id, username), ...user };
 };
 
-export const isValidScore = (data: string) => {
+export const isValidWordleScore = (data: string) => {
   const firstLine = data.split("\n")[0];
   // Get the score
   const score = firstLine.substring(firstLine.length - 3);
@@ -147,7 +151,7 @@ export const generateUserStats = (stats: User) => {
   return str;
 };
 
-export const completedToday = (lastGame: string) => {
+export const completedWordleToday = (lastGame: string) => {
   if (lastGame == "") return false;
   const currentDate = new Date();
   const lastGameDate = new Date(lastGame);
@@ -162,7 +166,7 @@ export const checkForNewUsername = (username: string, userData: User) => {
   return userData;
 };
 
-export const completedWordle = (
+export const calculateUpdatedWordleData = (
   completed: string,
   total: string,
   userData: User
@@ -192,7 +196,7 @@ export const completedWordle = (
   return userData;
 };
 
-export const isValidStreak = (userData: User) => {
+export const calculateStreak = (userData: User) => {
   const currentDate = new Date().toISOString();
   const lastGameDate = userData.lastGameDate ?? "";
   // We can change this up once everyone has a lastGameDate

@@ -1,5 +1,11 @@
 import { REST } from "@discordjs/rest";
-import { Client, GatewayIntentBits, Interaction, Routes } from "discord.js";
+import {
+  Client,
+  GatewayIntentBits,
+  Interaction,
+  Message,
+  Routes,
+} from "discord.js";
 import dotenv from "dotenv";
 import LeaderboardCommand from "./commands/leaderboard";
 import SetChannelCommand from "./commands/setChannel";
@@ -13,21 +19,21 @@ import {
 import {
   calculateBestScore,
   checkForNewUsername,
-  completedToday,
-  completedWordle,
+  completedWordleToday,
+  calculateUpdatedWordleData,
   createGuild,
   deleteGuild,
   generateLeaderboard,
   generateUserStats,
-  getGuildUsers,
-  getUserData,
+  getGuildWordles,
+  getUserWordleData,
   getWordle,
-  getWordleChannel,
+  getGuildWordleChannel,
   getWordles,
-  isValidScore,
-  isValidStreak,
+  isValidWordleScore,
+  calculateStreak,
   setWordleChannel,
-  updateGuildUsers,
+  updateGuildUserData,
 } from "./util/functions";
 dotenv.config();
 
@@ -55,43 +61,40 @@ client.on("guildDelete", async (guild) => {
   await deleteGuild(guild.id);
 });
 
-client.on("messageCreate", async (c) => {
-  // Ignore if it's a bot message or just a regular message
-  if (c.author.bot || !c.content.trim().startsWith("Wordle ")) {
-    return;
-  }
+client.on("messageCreate", async (c: Message) => {
+  const isRegularMessage =
+    c.author.bot || !c.content.trim().startsWith("Wordle ");
 
-  // variable setup - using ! to tell TS that we know it's not null
-  const guildId = c.guildId!;
-  const channelId = c.channelId;
-  const userId = c.author.id;
-  const username = c.author.username;
+  if (isRegularMessage) return;
+
+  // variable setup
+  const { guildId, channelId } = c as { guildId: string; channelId: string };
+  const { id: userId, username } = c.author;
 
   // TODO: store this ahead of time potentially to avoid multiple calls
-  const isWordleChannel = await getWordleChannel(guildId as string, channelId);
+  const isWordleChannel = await getGuildWordleChannel(guildId, channelId);
 
   if (isWordleChannel) {
-    const wordles = await getGuildUsers(guildId as string);
+    const wordles = await getGuildWordles(guildId);
 
-    const { isValid, score } = isValidScore(c.content);
+    const { isValid, score } = isValidWordleScore(c.content);
 
     if (isValid) {
       const [completed, total] = score.split("/");
 
       // Get the existing user data or create a new one
-      let userData = getUserData(wordles, userId, username);
+      let userData = getUserWordleData(wordles, userId, username);
 
-      if (completedToday(userData.lastGameDate)) {
+      if (completedWordleToday(userData.lastGameDate)) {
         await c.reply(COMPLETED_TODAY_TEXT(userData.lastGameDate));
         return;
       }
       // various functions to update the user data
       userData = checkForNewUsername(username, userData);
-      userData = completedWordle(completed, total, userData);
-      userData = isValidStreak(userData);
+      userData = calculateUpdatedWordleData(completed, total, userData);
+      userData = calculateStreak(userData);
       userData = calculateBestScore(completed, userData);
-
-      await updateGuildUsers(guildId, userId, userData);
+      await updateGuildUserData(guildId, userId, userData);
     } else {
       await c.reply(INVALID_SCORE_TEXT);
     }

@@ -193,10 +193,16 @@ var isValidScore = function (data) {
 exports.isValidScore = isValidScore;
 var generateLeaderboard = function (wordles) {
     var str = "";
-    // Sort the leaderboard by percentage completed, then by average guesses, then by total wordles
+    // Sort the leaderboard by percentageCompleted if the totalWordles are the same, then by averageGuesses, then by totalWordles, then by currentStreak, then by bestScore.
     var leaderboard = wordles.sort(function (a, b) {
         if (a.percentageCompleted === b.percentageCompleted) {
             if (a.averageGuesses === b.averageGuesses) {
+                if (a.totalWordles === b.totalWordles) {
+                    if (a.currentStreak === b.currentStreak) {
+                        return b.bestScore - a.bestScore;
+                    }
+                    return b.currentStreak - a.currentStreak;
+                }
                 return b.totalWordles - a.totalWordles;
             }
             return a.averageGuesses - b.averageGuesses;

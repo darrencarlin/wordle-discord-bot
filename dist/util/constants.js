@@ -15,7 +15,7 @@ var USER = function (id, username) {
         averageGuesses: 0,
         currentStreak: 0,
         longestStreak: 0,
-        lastGameDate: new Date().toISOString(),
+        lastGameDate: "",
         bestScore: 0,
         scores: [0, 0, 0, 0, 0, 0]
     };

@@ -85,33 +85,30 @@ client.on("guildDelete", function (guild) { return __awaiter(void 0, void 0, voi
     });
 }); });
 client.on("messageCreate", function (c) { return __awaiter(void 0, void 0, void 0, function () {
-    var guildId, channelId, userId, username, isWordleChannel, wordles, _a, isValid, score, _b, completed, total, userData;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
+    var isRegularMessage, _a, guildId, channelId, _b, userId, username, isWordleChannel, wordles, _c, isValid, score, _d, completed, total, userData;
+    return __generator(this, function (_e) {
+        switch (_e.label) {
             case 0:
-                // Ignore if it's a bot message or just a regular message
-                if (c.author.bot || !c.content.trim().startsWith("Wordle ")) {
+                isRegularMessage = c.author.bot || !c.content.trim().startsWith("Wordle ");
+                if (isRegularMessage)
                     return [2 /*return*/];
-                }
-                guildId = c.guildId;
-                channelId = c.channelId;
-                userId = c.author.id;
-                username = c.author.username;
+                _a = c, guildId = _a.guildId, channelId = _a.channelId;
+                _b = c.author, userId = _b.id, username = _b.username;
                 return [4 /*yield*/, (0, functions_1.getWordleChannel)(guildId, channelId)];
             case 1:
-                isWordleChannel = _c.sent();
+                isWordleChannel = _e.sent();
                 if (!isWordleChannel) return [3 /*break*/, 8];
                 return [4 /*yield*/, (0, functions_1.getGuildUsers)(guildId)];
             case 2:
-                wordles = _c.sent();
-                _a = (0, functions_1.isValidScore)(c.content), isValid = _a.isValid, score = _a.score;
+                wordles = _e.sent();
+                _c = (0, functions_1.isValidScore)(c.content), isValid = _c.isValid, score = _c.score;
                 if (!isValid) return [3 /*break*/, 6];
-                _b = score.split("/"), completed = _b[0], total = _b[1];
+                _d = score.split("/"), completed = _d[0], total = _d[1];
                 userData = (0, functions_1.getUserData)(wordles, userId, username);
                 if (!(0, functions_1.completedToday)(userData.lastGameDate)) return [3 /*break*/, 4];
                 return [4 /*yield*/, c.reply((0, constants_1.COMPLETED_TODAY_TEXT)(userData.lastGameDate))];
             case 3:
-                _c.sent();
+                _e.sent();
                 return [2 /*return*/];
             case 4:
                 // various functions to update the user data
@@ -121,12 +118,12 @@ client.on("messageCreate", function (c) { return __awaiter(void 0, void 0, void 
                 userData = (0, functions_1.calculateBestScore)(completed, userData);
                 return [4 /*yield*/, (0, functions_1.updateGuildUsers)(guildId, userId, userData)];
             case 5:
-                _c.sent();
+                _e.sent();
                 return [3 /*break*/, 8];
             case 6: return [4 /*yield*/, c.reply(constants_1.INVALID_SCORE_TEXT)];
             case 7:
-                _c.sent();
-                _c.label = 8;
+                _e.sent();
+                _e.label = 8;
             case 8: return [2 /*return*/];
         }
     });
