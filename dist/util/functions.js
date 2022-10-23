@@ -47,7 +47,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.isValidStreakTime = exports.calculateBestScore = exports.isValidStreak = exports.completedWordle = exports.checkForNewUsername = exports.completedToday = exports.generateUserStats = exports.generateLeaderboard = exports.isValidScore = exports.getUserData = exports.updateGuildUsers = exports.getGuildUsers = exports.getWordleChannel = exports.setWordleChannel = exports.deleteGuild = exports.createGuild = exports.getWordle = exports.getWordles = void 0;
+exports.calculateBestScore = exports.calculateStreak = exports.calculateUpdatedWordleData = exports.checkForNewUsername = exports.getWordleNumber = exports.generateUserStats = exports.generateLeaderboard = exports.isValidWordleScore = exports.getUserWordleData = exports.updateGuildUserData = exports.getGuildWordles = exports.getGuildWordleChannel = exports.setWordleChannel = exports.deleteGuild = exports.createGuild = exports.getWordle = exports.getWordles = void 0;
 // Firebase functions
 var firestore_1 = require("firebase/firestore");
 var constants_1 = require("./constants");
@@ -121,7 +121,7 @@ var setWordleChannel = function (id, channelId) { return __awaiter(void 0, void 
     });
 }); };
 exports.setWordleChannel = setWordleChannel;
-var getWordleChannel = function (id, channelId) { return __awaiter(void 0, void 0, void 0, function () {
+var getGuildWordleChannel = function (id, channelId) { return __awaiter(void 0, void 0, void 0, function () {
     var docRef, docSnap;
     var _a;
     return __generator(this, function (_b) {
@@ -141,8 +141,8 @@ var getWordleChannel = function (id, channelId) { return __awaiter(void 0, void 
         }
     });
 }); };
-exports.getWordleChannel = getWordleChannel;
-var getGuildUsers = function (id) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getGuildWordleChannel = getGuildWordleChannel;
+var getGuildWordles = function (id) { return __awaiter(void 0, void 0, void 0, function () {
     var usersSubcollection, usersSnapshot, wordles;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -159,8 +159,8 @@ var getGuildUsers = function (id) { return __awaiter(void 0, void 0, void 0, fun
         }
     });
 }); };
-exports.getGuildUsers = getGuildUsers;
-var updateGuildUsers = function (id, userId, userData) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getGuildWordles = getGuildWordles;
+var updateGuildUserData = function (id, userId, userData) { return __awaiter(void 0, void 0, void 0, function () {
     var usersSubcollection;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -173,24 +173,24 @@ var updateGuildUsers = function (id, userId, userData) { return __awaiter(void 0
         }
     });
 }); };
-exports.updateGuildUsers = updateGuildUsers;
+exports.updateGuildUserData = updateGuildUserData;
 // Discord bot functions
-var getUserData = function (wordles, id, username) {
+var getUserWordleData = function (wordles, id, username) {
     var user = wordles.find(function (user) { return user.userId === id; });
     return __assign(__assign({}, (0, constants_1.USER)(id, username)), user);
 };
-exports.getUserData = getUserData;
-var isValidScore = function (data) {
+exports.getUserWordleData = getUserWordleData;
+var isValidWordleScore = function (data) {
     var firstLine = data.split("\n")[0];
     // Get the score
     var score = firstLine.substring(firstLine.length - 3);
     // Regex to test score
-    var regex = /^([1-6]|X)+\/[1-6]+$/i;
+    var regex = /^([1-6]{1}|X)+\/[1-6]+$/i;
     // Test it
     var isValid = regex.test(score);
     return { isValid: isValid, score: score };
 };
-exports.isValidScore = isValidScore;
+exports.isValidWordleScore = isValidWordleScore;
 var generateLeaderboard = function (wordles) {
     var str = "";
     // Sort the leaderboard by percentageCompleted if the totalWordles are the same, then by averageGuesses, then by totalWordles, then by currentStreak, then by bestScore.
@@ -216,22 +216,19 @@ var generateLeaderboard = function (wordles) {
 };
 exports.generateLeaderboard = generateLeaderboard;
 var generateUserStats = function (stats) {
-    // Build the stats message
     var str = "\n**Stats for ".concat(stats.usernames[0], "**\n\nTotal Wordles: ").concat(stats.totalWordles, "\nWordles Completed: ").concat(stats.wordlesCompleted, "\nWordles Failed: ").concat(stats.wordlesFailed, "\nPercentage Completed: ").concat(stats.percentageCompleted, "%\nPercentage Failed: ").concat(stats.percentageFailed, "%\nAverage Guesses Per Wordle: ").concat(stats.averageGuesses, "\nCurrent Streak ").concat(stats.currentStreak, "\nLongest Streak: ").concat(stats.longestStreak, "\nBest Score: ").concat(stats.bestScore, "\n\n**Score Breakdown**:\n\n").concat(stats.scores
         .map(function (score, index) { return "".concat(index + 1, " word gueses x ").concat(score); })
         .join("\n"));
-    // Send the stats message
     return str;
 };
 exports.generateUserStats = generateUserStats;
-var completedToday = function (lastGame) {
-    if (lastGame == "")
-        return false;
-    var currentDate = new Date();
-    var lastGameDate = new Date(lastGame);
-    return currentDate.getDate() === lastGameDate.getDate();
+var getWordleNumber = function (content) {
+    var wordleNumber = content.split(" ")[1];
+    if (wordleNumber) {
+        return Number(wordleNumber);
+    }
 };
-exports.completedToday = completedToday;
+exports.getWordleNumber = getWordleNumber;
 var checkForNewUsername = function (username, userData) {
     if (!userData.usernames.includes(username)) {
         userData.usernames.push(username);
@@ -239,12 +236,11 @@ var checkForNewUsername = function (username, userData) {
     return userData;
 };
 exports.checkForNewUsername = checkForNewUsername;
-var completedWordle = function (completed, total, userData) {
+var calculateUpdatedWordleData = function (completed, total, userData) {
     // If the user completed the wordle
     if (Number(completed) <= Number(total)) {
         userData.wordlesCompleted++;
         userData.totalWordles++;
-        userData.percentageCompleted = Math.round((userData.wordlesCompleted / userData.totalWordles) * 100);
         userData.completionGuesses.push(Number(completed));
         userData.averageGuesses = Math.round(userData.completionGuesses.reduce(function (a, b) { return a + b; }) /
             userData.completionGuesses.length);
@@ -253,31 +249,36 @@ var completedWordle = function (completed, total, userData) {
     if (completed === "X") {
         userData.wordlesFailed++;
         userData.totalWordles++;
-        userData.percentageFailed = Math.round((userData.wordlesFailed / userData.totalWordles) * 100);
     }
+    userData.percentageCompleted = Math.round((userData.wordlesCompleted / userData.totalWordles) * 100);
+    userData.percentageFailed = Math.round((userData.wordlesFailed / userData.totalWordles) * 100);
     return userData;
 };
-exports.completedWordle = completedWordle;
-var isValidStreak = function (userData) {
-    var _a;
-    var currentDate = new Date().toISOString();
-    var lastGameDate = (_a = userData.lastGameDate) !== null && _a !== void 0 ? _a : "";
-    // We can change this up once everyone has a lastGameDate
-    var isValid = lastGameDate !== "" ? (0, exports.isValidStreakTime)(lastGameDate) : true;
-    if (isValid) {
+exports.calculateUpdatedWordleData = calculateUpdatedWordleData;
+var calculateStreak = function (completed, userData, wordleNumber) {
+    // 0 = first game
+    if (userData.lastGameNumber === 0) {
+        userData.lastGameNumber = wordleNumber;
+        userData.currentStreak++;
+        userData.longestStreak++;
+        return userData;
+    }
+    var isStreak = (userData.lastGameNumber + 1 === wordleNumber && completed !== "X") ||
+        completed === "x";
+    console.log({ isStreak: isStreak });
+    if (isStreak) {
         userData.currentStreak++;
         if (userData.currentStreak > userData.longestStreak) {
             userData.longestStreak = userData.currentStreak;
         }
     }
-    if (!isValid) {
+    if (!isStreak) {
         userData.currentStreak = 0;
     }
-    // update the last game date to today
-    userData.lastGameDate = currentDate;
+    userData.lastGameNumber = wordleNumber;
     return userData;
 };
-exports.isValidStreak = isValidStreak;
+exports.calculateStreak = calculateStreak;
 var calculateBestScore = function (completed, userData) {
     if (Number(completed) < userData.bestScore || userData.bestScore === 0) {
         userData.bestScore = Number(completed);
@@ -289,12 +290,3 @@ var calculateBestScore = function (completed, userData) {
     return userData;
 };
 exports.calculateBestScore = calculateBestScore;
-// check if date is over 24 hours and less than 48 hours
-var isValidStreakTime = function (date) {
-    var currentDate = new Date();
-    var lastGameDate = new Date(date);
-    var diff = currentDate.getTime() - lastGameDate.getTime();
-    var hours = Math.abs(diff / 36e5);
-    return hours > 24 && hours < 48;
-};
-exports.isValidStreakTime = isValidStreakTime;

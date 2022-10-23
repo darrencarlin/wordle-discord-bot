@@ -85,7 +85,7 @@ client.on("guildDelete", function (guild) { return __awaiter(void 0, void 0, voi
     });
 }); });
 client.on("messageCreate", function (c) { return __awaiter(void 0, void 0, void 0, function () {
-    var isRegularMessage, _a, guildId, channelId, _b, userId, username, isWordleChannel, wordles, _c, isValid, score, _d, completed, total, userData;
+    var isRegularMessage, _a, guildId, channelId, _b, userId, username, isWordleChannel, wordles, wordleNumber, _c, isValid, score, _d, completed, total, userData;
     return __generator(this, function (_e) {
         switch (_e.label) {
             case 0:
@@ -94,29 +94,30 @@ client.on("messageCreate", function (c) { return __awaiter(void 0, void 0, void 
                     return [2 /*return*/];
                 _a = c, guildId = _a.guildId, channelId = _a.channelId;
                 _b = c.author, userId = _b.id, username = _b.username;
-                return [4 /*yield*/, (0, functions_1.getWordleChannel)(guildId, channelId)];
+                return [4 /*yield*/, (0, functions_1.getGuildWordleChannel)(guildId, channelId)];
             case 1:
                 isWordleChannel = _e.sent();
                 if (!isWordleChannel) return [3 /*break*/, 8];
-                return [4 /*yield*/, (0, functions_1.getGuildUsers)(guildId)];
+                return [4 /*yield*/, (0, functions_1.getGuildWordles)(guildId)];
             case 2:
                 wordles = _e.sent();
-                _c = (0, functions_1.isValidScore)(c.content), isValid = _c.isValid, score = _c.score;
+                wordleNumber = (0, functions_1.getWordleNumber)(c.content);
+                _c = (0, functions_1.isValidWordleScore)(c.content), isValid = _c.isValid, score = _c.score;
                 if (!isValid) return [3 /*break*/, 6];
                 _d = score.split("/"), completed = _d[0], total = _d[1];
-                userData = (0, functions_1.getUserData)(wordles, userId, username);
-                if (!(0, functions_1.completedToday)(userData.lastGameDate)) return [3 /*break*/, 4];
-                return [4 /*yield*/, c.reply((0, constants_1.COMPLETED_TODAY_TEXT)(userData.lastGameDate))];
+                userData = (0, functions_1.getUserWordleData)(wordles, userId, username);
+                if (!(wordleNumber <= userData.lastGameNumber)) return [3 /*break*/, 4];
+                return [4 /*yield*/, c.reply((0, constants_1.COMPLETED_ALREADY_TEXT)(userData.lastGameNumber.toString()))];
             case 3:
                 _e.sent();
                 return [2 /*return*/];
             case 4:
                 // various functions to update the user data
                 userData = (0, functions_1.checkForNewUsername)(username, userData);
-                userData = (0, functions_1.completedWordle)(completed, total, userData);
-                userData = (0, functions_1.isValidStreak)(userData);
+                userData = (0, functions_1.calculateUpdatedWordleData)(completed, total, userData);
+                userData = (0, functions_1.calculateStreak)(completed, userData, wordleNumber);
                 userData = (0, functions_1.calculateBestScore)(completed, userData);
-                return [4 /*yield*/, (0, functions_1.updateGuildUsers)(guildId, userId, userData)];
+                return [4 /*yield*/, (0, functions_1.updateGuildUserData)(guildId, userId, userData)];
             case 5:
                 _e.sent();
                 return [3 /*break*/, 8];

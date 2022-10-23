@@ -12,7 +12,7 @@ export interface User {
   averageGuesses: number;
   currentStreak: number;
   longestStreak: number;
-  lastGameDate: string;
+  lastGameNumber: number;
   bestScore: number;
   scores: number[];
 }

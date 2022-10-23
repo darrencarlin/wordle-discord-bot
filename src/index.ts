@@ -11,7 +11,7 @@ import LeaderboardCommand from "./commands/leaderboard";
 import SetChannelCommand from "./commands/setChannel";
 import StatsCommand from "./commands/stats";
 import {
-  COMPLETED_TODAY_TEXT,
+  COMPLETED_ALREADY_TEXT,
   INVALID_SCORE_TEXT,
   NOT_PLAYED_TEXT,
   SOMETHING_WENT_WRONG_TEXT,
@@ -19,7 +19,6 @@ import {
 import {
   calculateBestScore,
   checkForNewUsername,
-  completedWordleToday,
   calculateUpdatedWordleData,
   createGuild,
   deleteGuild,
@@ -34,6 +33,7 @@ import {
   calculateStreak,
   setWordleChannel,
   updateGuildUserData,
+  getWordleNumber,
 } from "./util/functions";
 dotenv.config();
 
@@ -77,6 +77,8 @@ client.on("messageCreate", async (c: Message) => {
   if (isWordleChannel) {
     const wordles = await getGuildWordles(guildId);
 
+    const wordleNumber = getWordleNumber(c.content)!;
+
     const { isValid, score } = isValidWordleScore(c.content);
 
     if (isValid) {
@@ -84,15 +86,18 @@ client.on("messageCreate", async (c: Message) => {
 
       // Get the existing user data or create a new one
       let userData = getUserWordleData(wordles, userId, username);
-
-      if (completedWordleToday(userData.lastGameDate)) {
-        await c.reply(COMPLETED_TODAY_TEXT(userData.lastGameDate));
+      // If the user tries to submit the same wordle or an earlier one, return
+      if (wordleNumber <= userData.lastGameNumber) {
+        await c.reply(
+          COMPLETED_ALREADY_TEXT(userData.lastGameNumber.toString())
+        );
         return;
       }
+
       // various functions to update the user data
       userData = checkForNewUsername(username, userData);
       userData = calculateUpdatedWordleData(completed, total, userData);
-      userData = calculateStreak(userData);
+      userData = calculateStreak(completed, userData, wordleNumber);
       userData = calculateBestScore(completed, userData);
       await updateGuildUserData(guildId, userId, userData);
     } else {

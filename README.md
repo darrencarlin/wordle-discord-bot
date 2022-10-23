@@ -24,7 +24,6 @@ It store the users scores and stats using Google Firestore with the following sc
     averageGuesses: 0,
     currentStreak: 0,
     longestStreak: 0,
-    lastGameDate: new Date().toISOString(),
     bestScore: 0,
     scores: [0, 0, 0, 0, 0, 0],
   },

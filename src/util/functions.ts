@@ -92,7 +92,7 @@ export const isValidWordleScore = (data: string) => {
   // Get the score
   const score = firstLine.substring(firstLine.length - 3);
   // Regex to test score
-  const regex = /^([1-6]|X)+\/[1-6]+$/i;
+  const regex = /^([1-6]{1}|X)+\/[1-6]+$/i;
   // Test it
   const isValid = regex.test(score);
 
@@ -132,7 +132,6 @@ export const generateLeaderboard = (wordles: User[]) => {
 };
 
 export const generateUserStats = (stats: User) => {
-  // Build the stats message
   const str = `\n**Stats for ${stats.usernames[0]}**\n\nTotal Wordles: ${
     stats.totalWordles
   }\nWordles Completed: ${stats.wordlesCompleted}\nWordles Failed: ${
@@ -146,17 +145,15 @@ export const generateUserStats = (stats: User) => {
   }\n\n**Score Breakdown**:\n\n${stats.scores
     .map((score, index) => `${index + 1} word gueses x ${score}`)
     .join("\n")}`;
-  // Send the stats message
 
   return str;
 };
 
-export const completedWordleToday = (lastGame: string) => {
-  if (lastGame == "") return false;
-  const currentDate = new Date();
-  const lastGameDate = new Date(lastGame);
-
-  return currentDate.getDate() === lastGameDate.getDate();
+export const getWordleNumber = (content: string) => {
+  const wordleNumber = content.split(" ")[1];
+  if (wordleNumber) {
+    return Number(wordleNumber);
+  }
 };
 
 export const checkForNewUsername = (username: string, userData: User) => {
@@ -175,9 +172,6 @@ export const calculateUpdatedWordleData = (
   if (Number(completed) <= Number(total)) {
     userData.wordlesCompleted++;
     userData.totalWordles++;
-    userData.percentageCompleted = Math.round(
-      (userData.wordlesCompleted / userData.totalWordles) * 100
-    );
     userData.completionGuesses.push(Number(completed));
     userData.averageGuesses = Math.round(
       userData.completionGuesses.reduce((a, b) => a + b) /
@@ -188,33 +182,48 @@ export const calculateUpdatedWordleData = (
   if (completed === "X") {
     userData.wordlesFailed++;
     userData.totalWordles++;
-    userData.percentageFailed = Math.round(
-      (userData.wordlesFailed / userData.totalWordles) * 100
-    );
   }
+
+  userData.percentageCompleted = Math.round(
+    (userData.wordlesCompleted / userData.totalWordles) * 100
+  );
+
+  userData.percentageFailed = Math.round(
+    (userData.wordlesFailed / userData.totalWordles) * 100
+  );
 
   return userData;
 };
 
-export const calculateStreak = (userData: User) => {
-  const currentDate = new Date().toISOString();
-  const lastGameDate = userData.lastGameDate ?? "";
-  // We can change this up once everyone has a lastGameDate
-  const isValid = lastGameDate !== "" ? isValidStreakTime(lastGameDate) : true;
+export const calculateStreak = (
+  completed: string,
+  userData: User,
+  wordleNumber: number
+) => {
+  // 0 = first game
+  if (userData.lastGameNumber === 0) {
+    userData.lastGameNumber = wordleNumber;
+    userData.currentStreak++;
+    userData.longestStreak++;
+    return userData;
+  }
 
-  if (isValid) {
+  const isStreak =
+    (userData.lastGameNumber + 1 === wordleNumber && completed !== "X") ||
+    completed === "x";
+  console.log({ isStreak });
+  if (isStreak) {
     userData.currentStreak++;
     if (userData.currentStreak > userData.longestStreak) {
       userData.longestStreak = userData.currentStreak;
     }
   }
 
-  if (!isValid) {
+  if (!isStreak) {
     userData.currentStreak = 0;
   }
 
-  // update the last game date to today
-  userData.lastGameDate = currentDate;
+  userData.lastGameNumber = wordleNumber;
 
   return userData;
 };
@@ -230,13 +239,4 @@ export const calculateBestScore = (completed: string, userData: User) => {
   }
 
   return userData;
-};
-
-// check if date is over 24 hours and less than 48 hours
-export const isValidStreakTime = (date: string) => {
-  const currentDate = new Date();
-  const lastGameDate = new Date(date);
-  const diff = currentDate.getTime() - lastGameDate.getTime();
-  const hours = Math.abs(diff / 36e5);
-  return hours > 24 && hours < 48;
 };
