@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import { REST } from "@discordjs/rest";
 import {
   Client,
@@ -6,10 +8,11 @@ import {
   Message,
   Routes,
 } from "discord.js";
-import dotenv from "dotenv";
-import LeaderboardCommand from "./commands/leaderboard";
-import SetChannelCommand from "./commands/setChannel";
-import StatsCommand from "./commands/stats";
+import {
+  leaderboardCommand,
+  setChannelCommand,
+  statsCommand,
+} from "./commands";
 import {
   COMPLETED_ALREADY_TEXT,
   INVALID_SCORE_TEXT,
@@ -20,22 +23,26 @@ import {
   calculateBestScore,
   checkForNewUsername,
   calculateUpdatedWordleData,
-  createGuild,
-  deleteGuild,
   generateLeaderboard,
   generateUserStats,
-  getGuildWordles,
   getUserWordleData,
+  isValidWordleScore,
+  calculateStreak,
+  getWordleNumber,
+  calculateAchievements,
+} from "./util/functions/bot";
+import {
+  getGuildWordles,
+  createGuild,
+  deleteGuild,
   getWordle,
   getGuildWordleChannel,
   getWordles,
-  isValidWordleScore,
-  calculateStreak,
   setWordleChannel,
   updateGuildUserData,
-  getWordleNumber,
-} from "./util/functions";
-dotenv.config();
+} from "./util/functions/firebase";
+import statsEmbed from "./embeds/stats";
+import achievementsEmbed from "./embeds/achievements";
 
 const client = new Client({
   intents: [
@@ -99,7 +106,16 @@ client.on("messageCreate", async (c: Message) => {
       userData = calculateUpdatedWordleData(completed, total, userData);
       userData = calculateStreak(completed, userData, wordleNumber);
       userData = calculateBestScore(completed, userData);
-      await updateGuildUserData(guildId, userId, userData);
+
+      const { newUserData, newAchievements } = calculateAchievements(userData);
+
+      await updateGuildUserData(guildId, userId, newUserData);
+
+      if (newAchievements.length) {
+        await c.reply({
+          embeds: [achievementsEmbed(newUserData, newAchievements)],
+        });
+      }
     } else {
       await c.reply(INVALID_SCORE_TEXT);
     }
@@ -116,11 +132,13 @@ client.on("interactionCreate", async (interaction: Interaction) => {
       const data = await getWordle(guildId as string, userId);
       if (data) {
         const stats = generateUserStats(data);
-        await interaction.reply(stats);
+        await interaction.reply({
+          embeds: [statsEmbed(stats)],
+          ephemeral: interaction.options.getBoolean("ephemeral") ?? false,
+        });
       } else {
         await interaction.reply(NOT_PLAYED_TEXT);
       }
-
       return;
     }
 
@@ -134,9 +152,10 @@ client.on("interactionCreate", async (interaction: Interaction) => {
     if (commandName === "set-channel") {
       const guildId = interaction.guildId;
       const channelId = interaction.channelId;
+      const guildName = interaction.guild?.name ?? "";
 
       if (guildId && channelId) {
-        await setWordleChannel(guildId, channelId);
+        await setWordleChannel(guildId, channelId, guildName);
         await interaction.reply("Wordle channel set!");
         return;
       }
@@ -147,7 +166,7 @@ client.on("interactionCreate", async (interaction: Interaction) => {
 });
 
 async function main() {
-  const commands = [LeaderboardCommand, StatsCommand, SetChannelCommand];
+  const commands = [leaderboardCommand, statsCommand, setChannelCommand];
   try {
     await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
       body: commands,

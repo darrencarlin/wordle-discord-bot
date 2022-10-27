@@ -1,3 +1,9 @@
+export interface Achievement {
+  id: number;
+  name: string;
+  description: string;
+}
+
 export type Wordles = User[];
 
 export interface User {
@@ -15,4 +21,5 @@ export interface User {
   lastGameNumber: number;
   bestScore: number;
   scores: number[];
+  achievements: Achievement[];
 }

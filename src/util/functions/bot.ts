@@ -1,82 +1,7 @@
-// Firebase functions
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-} from "firebase/firestore";
-import { USER } from "./constants";
-import { db } from "./firebase";
-import { User } from "./types";
-
-export const getWordles = async (id: string) => {
-  const wordles: User[] = [];
-  const usersSubcollection = collection(db, "guilds", id, "users");
-  const usersSnapshot = await getDocs(usersSubcollection);
-  usersSnapshot.forEach((doc) => {
-    wordles.push(doc.data() as User);
-  });
-  return wordles ?? [];
-};
-
-export const getWordle = async (id: string, userId: string) => {
-  const usersSubcollection = collection(db, "guilds", id, "users");
-  const userDoc = doc(usersSubcollection, userId);
-  const userDocSnap = await getDoc(userDoc);
-  if (userDocSnap.exists()) {
-    return userDocSnap.data() as User;
-  }
-  return false;
-};
-
-export const createGuild = async (id: string, name: string) => {
-  await setDoc(doc(db, "guilds", id), { guildId: id, name: name });
-};
-
-export const deleteGuild = async (id: string) => {
-  await deleteDoc(doc(db, "guilds", id));
-};
-
-export const setWordleChannel = async (id: string, channelId: string) => {
-  await setDoc(
-    doc(db, "guilds", id),
-    { channelId: channelId },
-    { merge: true }
-  );
-};
-
-export const getGuildWordleChannel = async (id: string, channelId: string) => {
-  const docRef = doc(db, "guilds", id);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    return docSnap.data()?.channelId === channelId;
-  } else {
-    return false;
-  }
-};
-
-export const getGuildWordles = async (id: string) => {
-  const usersSubcollection = collection(db, "guilds", id, "users");
-  const usersSnapshot = await getDocs(usersSubcollection);
-  const wordles: User[] = [];
-  usersSnapshot.forEach((doc) => {
-    wordles.push(doc.data() as User);
-  });
-  return wordles ?? [];
-};
-
-export const updateGuildUserData = async (
-  id: string,
-  userId: string,
-  userData: User
-) => {
-  const usersSubcollection = collection(db, "guilds", id, "users");
-  await setDoc(doc(usersSubcollection, userId), userData, { merge: true });
-};
-
 // Discord bot functions
+import { achievements } from "../achievements";
+import { USER } from "../constants";
+import { Achievement, User } from "../types";
 
 export const getUserWordleData = (
   wordles: User[],
@@ -100,8 +25,6 @@ export const isValidWordleScore = (data: string) => {
 };
 
 export const generateLeaderboard = (wordles: User[]) => {
-  let str = "";
-
   // Sort the leaderboard by percentageCompleted if the totalWordles are the same, then by averageGuesses, then by totalWordles, then by currentStreak, then by bestScore.
 
   const leaderboard = wordles.sort((a, b) => {
@@ -120,33 +43,40 @@ export const generateLeaderboard = (wordles: User[]) => {
     return b.percentageCompleted - a.percentageCompleted;
   });
 
+  let str = "```";
+
   leaderboard.forEach((user, index) => {
-    str += `** #${index + 1} **. ${user.usernames[0]} - ${
+    str += `#${index + 1}. ${user.usernames[0]} - ${
       user.percentageCompleted
-    }% completed / ${user.totalWordles} games total / average ${
+    }% completed / ${user.totalWordles} games / average ${
       user.averageGuesses
-    } guesses per game.\n`;
+    } guesses per game. / current streak: ${user.currentStreak} / best score: ${
+      user.bestScore
+    }`;
   });
+
+  str += "```";
 
   return str;
 };
 
-export const generateUserStats = (stats: User) => {
-  const str = `\n**Stats for ${stats.usernames[0]}**\n\nTotal Wordles: ${
-    stats.totalWordles
-  }\nWordles Completed: ${stats.wordlesCompleted}\nWordles Failed: ${
-    stats.wordlesFailed
-  }\nPercentage Completed: ${stats.percentageCompleted}%\nPercentage Failed: ${
-    stats.percentageFailed
-  }%\nAverage Guesses Per Wordle: ${stats.averageGuesses}\nCurrent Streak ${
-    stats.currentStreak
-  }\nLongest Streak: ${stats.longestStreak}\nBest Score: ${
-    stats.bestScore
-  }\n\n**Score Breakdown**:\n\n${stats.scores
-    .map((score, index) => `${index + 1} word gueses x ${score}`)
-    .join("\n")}`;
+export const generateUserStats = (data: User) => {
+  let stats = [];
 
-  return str;
+  stats.push(data.usernames[0]);
+  stats.push(`${data.totalWordles}`);
+  stats.push(`${data.percentageCompleted}%`);
+  stats.push(`${data.averageGuesses}`);
+  stats.push(`${data.currentStreak}`);
+  stats.push(`${data.bestScore}`);
+  stats.push(`${data.lastGameNumber}`);
+  stats.push(
+    `${data.scores
+      .map((score, index) => `${index + 1} word gueses x ${score}`)
+      .join("\n")}`
+  );
+
+  return stats;
 };
 
 export const getWordleNumber = (content: string) => {
@@ -211,7 +141,7 @@ export const calculateStreak = (
   const isStreak =
     (userData.lastGameNumber + 1 === wordleNumber && completed !== "X") ||
     completed === "x";
-  console.log({ isStreak });
+
   if (isStreak) {
     userData.currentStreak++;
     if (userData.currentStreak > userData.longestStreak) {
@@ -239,4 +169,14 @@ export const calculateBestScore = (completed: string, userData: User) => {
   }
 
   return userData;
+};
+
+export const calculateAchievements = (userData: User) => {
+  const achievementsGained = achievements
+    .map((achievement) => achievement.check(userData))
+    .flatMap((achievement) => (achievement ? [achievement] : []));
+
+  userData.achievements = [...userData.achievements, ...achievementsGained];
+
+  return { newUserData: userData, newAchievements: achievementsGained };
 };

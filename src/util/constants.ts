@@ -16,6 +16,7 @@ export const USER = (id: string, username: string): User => {
     lastGameNumber: 0,
     bestScore: 0,
     scores: [0, 0, 0, 0, 0, 0],
+    achievements: [],
   };
 };
 
@@ -29,3 +30,8 @@ export const NOT_PLAYED_TEXT = "You have not played any wordles yet!";
 
 export const SOMETHING_WENT_WRONG_TEXT =
   "Oops, something went wrong. Please try again.";
+
+export const BANNER_IMAGE = "https://i.imgur.com/iK5igVK.png";
+
+export const THUMBNAIL_IMAGE =
+  "https://cdn.discordapp.com/app-icons/1032088952116609055/307c23e55b3e11a56130e58507892b7b.png?size=256";

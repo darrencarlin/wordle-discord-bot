@@ -39,15 +39,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 exports.__esModule = true;
+var dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1["default"].config();
 var rest_1 = require("@discordjs/rest");
 var discord_js_1 = require("discord.js");
-var dotenv_1 = __importDefault(require("dotenv"));
-var leaderboard_1 = __importDefault(require("./commands/leaderboard"));
-var setChannel_1 = __importDefault(require("./commands/setChannel"));
-var stats_1 = __importDefault(require("./commands/stats"));
+var commands_1 = require("./commands");
 var constants_1 = require("./util/constants");
-var functions_1 = require("./util/functions");
-dotenv_1["default"].config();
+var bot_1 = require("./util/functions/bot");
+var firebase_1 = require("./util/functions/firebase");
+var stats_1 = __importDefault(require("./embeds/stats"));
+var achievements_1 = __importDefault(require("./embeds/achievements"));
 var client = new discord_js_1.Client({
     intents: [
         discord_js_1.GatewayIntentBits.Guilds,
@@ -65,7 +66,7 @@ client.on("guildCreate", function (guild) { return __awaiter(void 0, void 0, voi
         switch (_a.label) {
             case 0:
                 console.log("Joined guild ".concat(guild.name));
-                return [4 /*yield*/, (0, functions_1.createGuild)(guild.id, guild.name)];
+                return [4 /*yield*/, (0, firebase_1.createGuild)(guild.id, guild.name)];
             case 1:
                 _a.sent();
                 return [2 /*return*/];
@@ -77,7 +78,7 @@ client.on("guildDelete", function (guild) { return __awaiter(void 0, void 0, voi
         switch (_a.label) {
             case 0:
                 console.log("Left guild ".concat(guild.name));
-                return [4 /*yield*/, (0, functions_1.deleteGuild)(guild.id)];
+                return [4 /*yield*/, (0, firebase_1.deleteGuild)(guild.id)];
             case 1:
                 _a.sent();
                 return [2 /*return*/];
@@ -85,99 +86,112 @@ client.on("guildDelete", function (guild) { return __awaiter(void 0, void 0, voi
     });
 }); });
 client.on("messageCreate", function (c) { return __awaiter(void 0, void 0, void 0, function () {
-    var isRegularMessage, _a, guildId, channelId, _b, userId, username, isWordleChannel, wordles, wordleNumber, _c, isValid, score, _d, completed, total, userData;
-    return __generator(this, function (_e) {
-        switch (_e.label) {
+    var isRegularMessage, _a, guildId, channelId, _b, userId, username, isWordleChannel, wordles, wordleNumber, _c, isValid, score, _d, completed, total, userData, _e, newUserData, newAchievements;
+    return __generator(this, function (_f) {
+        switch (_f.label) {
             case 0:
                 isRegularMessage = c.author.bot || !c.content.trim().startsWith("Wordle ");
                 if (isRegularMessage)
                     return [2 /*return*/];
                 _a = c, guildId = _a.guildId, channelId = _a.channelId;
                 _b = c.author, userId = _b.id, username = _b.username;
-                return [4 /*yield*/, (0, functions_1.getGuildWordleChannel)(guildId, channelId)];
+                return [4 /*yield*/, (0, firebase_1.getGuildWordleChannel)(guildId, channelId)];
             case 1:
-                isWordleChannel = _e.sent();
-                if (!isWordleChannel) return [3 /*break*/, 8];
-                return [4 /*yield*/, (0, functions_1.getGuildWordles)(guildId)];
+                isWordleChannel = _f.sent();
+                if (!isWordleChannel) return [3 /*break*/, 10];
+                return [4 /*yield*/, (0, firebase_1.getGuildWordles)(guildId)];
             case 2:
-                wordles = _e.sent();
-                wordleNumber = (0, functions_1.getWordleNumber)(c.content);
-                _c = (0, functions_1.isValidWordleScore)(c.content), isValid = _c.isValid, score = _c.score;
-                if (!isValid) return [3 /*break*/, 6];
+                wordles = _f.sent();
+                wordleNumber = (0, bot_1.getWordleNumber)(c.content);
+                _c = (0, bot_1.isValidWordleScore)(c.content), isValid = _c.isValid, score = _c.score;
+                if (!isValid) return [3 /*break*/, 8];
                 _d = score.split("/"), completed = _d[0], total = _d[1];
-                userData = (0, functions_1.getUserWordleData)(wordles, userId, username);
+                userData = (0, bot_1.getUserWordleData)(wordles, userId, username);
                 if (!(wordleNumber <= userData.lastGameNumber)) return [3 /*break*/, 4];
                 return [4 /*yield*/, c.reply((0, constants_1.COMPLETED_ALREADY_TEXT)(userData.lastGameNumber.toString()))];
             case 3:
-                _e.sent();
+                _f.sent();
                 return [2 /*return*/];
             case 4:
                 // various functions to update the user data
-                userData = (0, functions_1.checkForNewUsername)(username, userData);
-                userData = (0, functions_1.calculateUpdatedWordleData)(completed, total, userData);
-                userData = (0, functions_1.calculateStreak)(completed, userData, wordleNumber);
-                userData = (0, functions_1.calculateBestScore)(completed, userData);
-                return [4 /*yield*/, (0, functions_1.updateGuildUserData)(guildId, userId, userData)];
+                userData = (0, bot_1.checkForNewUsername)(username, userData);
+                userData = (0, bot_1.calculateUpdatedWordleData)(completed, total, userData);
+                userData = (0, bot_1.calculateStreak)(completed, userData, wordleNumber);
+                userData = (0, bot_1.calculateBestScore)(completed, userData);
+                _e = (0, bot_1.calculateAchievements)(userData), newUserData = _e.newUserData, newAchievements = _e.newAchievements;
+                return [4 /*yield*/, (0, firebase_1.updateGuildUserData)(guildId, userId, newUserData)];
             case 5:
-                _e.sent();
-                return [3 /*break*/, 8];
-            case 6: return [4 /*yield*/, c.reply(constants_1.INVALID_SCORE_TEXT)];
-            case 7:
-                _e.sent();
-                _e.label = 8;
-            case 8: return [2 /*return*/];
+                _f.sent();
+                if (!newAchievements.length) return [3 /*break*/, 7];
+                return [4 /*yield*/, c.reply({
+                        embeds: [(0, achievements_1["default"])(newUserData, newAchievements)]
+                    })];
+            case 6:
+                _f.sent();
+                _f.label = 7;
+            case 7: return [3 /*break*/, 10];
+            case 8: return [4 /*yield*/, c.reply(constants_1.INVALID_SCORE_TEXT)];
+            case 9:
+                _f.sent();
+                _f.label = 10;
+            case 10: return [2 /*return*/];
         }
     });
 }); });
 client.on("interactionCreate", function (interaction) { return __awaiter(void 0, void 0, void 0, function () {
-    var commandName, userId, guildId, data, stats, wordles, leaderboard, guildId_1, channelId;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+    var commandName, userId, guildId, data, stats, wordles, leaderboard, guildId_1, channelId, guildName;
+    var _a, _b, _c;
+    return __generator(this, function (_d) {
+        switch (_d.label) {
             case 0:
                 if (!interaction.isChatInputCommand()) return [3 /*break*/, 14];
                 commandName = interaction.commandName;
                 userId = interaction.user.id;
                 guildId = interaction.guildId;
                 if (!(commandName === "stats")) return [3 /*break*/, 6];
-                return [4 /*yield*/, (0, functions_1.getWordle)(guildId, userId)];
+                return [4 /*yield*/, (0, firebase_1.getWordle)(guildId, userId)];
             case 1:
-                data = _a.sent();
+                data = _d.sent();
                 if (!data) return [3 /*break*/, 3];
-                stats = (0, functions_1.generateUserStats)(data);
-                return [4 /*yield*/, interaction.reply(stats)];
+                stats = (0, bot_1.generateUserStats)(data);
+                return [4 /*yield*/, interaction.reply({
+                        embeds: [(0, stats_1["default"])(stats)],
+                        ephemeral: (_a = interaction.options.getBoolean("ephemeral")) !== null && _a !== void 0 ? _a : false
+                    })];
             case 2:
-                _a.sent();
+                _d.sent();
                 return [3 /*break*/, 5];
             case 3: return [4 /*yield*/, interaction.reply(constants_1.NOT_PLAYED_TEXT)];
             case 4:
-                _a.sent();
-                _a.label = 5;
+                _d.sent();
+                _d.label = 5;
             case 5: return [2 /*return*/];
             case 6:
                 if (!(commandName === "leaderboard")) return [3 /*break*/, 9];
-                return [4 /*yield*/, (0, functions_1.getWordles)(guildId)];
+                return [4 /*yield*/, (0, firebase_1.getWordles)(guildId)];
             case 7:
-                wordles = _a.sent();
-                leaderboard = (0, functions_1.generateLeaderboard)(wordles);
+                wordles = _d.sent();
+                leaderboard = (0, bot_1.generateLeaderboard)(wordles);
                 return [4 /*yield*/, interaction.reply(leaderboard)];
             case 8:
-                _a.sent();
+                _d.sent();
                 return [2 /*return*/];
             case 9:
                 if (!(commandName === "set-channel")) return [3 /*break*/, 14];
                 guildId_1 = interaction.guildId;
                 channelId = interaction.channelId;
+                guildName = (_c = (_b = interaction.guild) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : "";
                 if (!(guildId_1 && channelId)) return [3 /*break*/, 12];
-                return [4 /*yield*/, (0, functions_1.setWordleChannel)(guildId_1, channelId)];
+                return [4 /*yield*/, (0, firebase_1.setWordleChannel)(guildId_1, channelId, guildName)];
             case 10:
-                _a.sent();
+                _d.sent();
                 return [4 /*yield*/, interaction.reply("Wordle channel set!")];
             case 11:
-                _a.sent();
+                _d.sent();
                 return [2 /*return*/];
             case 12: return [4 /*yield*/, interaction.reply(constants_1.SOMETHING_WENT_WRONG_TEXT)];
             case 13:
-                _a.sent();
+                _d.sent();
                 return [2 /*return*/];
             case 14: return [2 /*return*/];
         }
@@ -189,7 +203,7 @@ function main() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    commands = [leaderboard_1["default"], stats_1["default"], setChannel_1["default"]];
+                    commands = [commands_1.leaderboardCommand, commands_1.statsCommand, commands_1.setChannelCommand];
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 3, , 4]);
