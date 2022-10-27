@@ -26,6 +26,7 @@ It store the users scores and stats using Google Firestore with the following sc
     longestStreak: 0,
     bestScore: 0,
     scores: [0, 0, 0, 0, 0, 0],
+    achievements: [{id: 1, name: "First Wordle", description: "You completed your first wordle"}],
   },
 ];
 
@@ -65,6 +66,8 @@ The bot has 3 slash commands.
 - Purge a users data
 - Stop users from entering the same wordle twice and more than once a day
 - Better leaderboard sorting (Joint positioning)
+- ~~Allow ephemeral stats~~
+- ~~Achievements~~
 - ~~Streak tracking `{currentStreak: 0, longestStreak: 0, lastGame: ""}`~~
 - ~~Best score tracking `{bestScore: 0}`~~
 - ~~General score tracking `{scores: [0,0,0,1,0,0]}`~~
