@@ -31,7 +31,6 @@ import {
   calculateStreak,
   getWordleNumber,
   calculateAchievements,
-  countCompletedAchievements,
 } from "./util/functions/bot";
 import {
   getGuildWordles,
@@ -46,7 +45,6 @@ import {
 import statsEmbed from "./embeds/stats";
 import achievementsEmbed from "./embeds/achievements";
 import achievementsListEmbed from "./embeds/achievementsList";
-import { achievements } from "./util/achievements";
 
 const client = new Client({
   intents: [
