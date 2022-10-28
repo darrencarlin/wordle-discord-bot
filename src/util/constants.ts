@@ -1,9 +1,10 @@
-import { User } from "./types";
+import { achievements } from "../util/achievements";
+import { NewUser, User } from "./types";
 
-export const USER = (id: string, username: string): User => {
+export const USER = (user: User | NewUser): User => {
   return {
-    userId: id,
-    usernames: [username],
+    userId: user.userId,
+    usernames: [...user.usernames],
     wordlesCompleted: 0,
     wordlesFailed: 0,
     totalWordles: 0,
@@ -16,7 +17,10 @@ export const USER = (id: string, username: string): User => {
     lastGameNumber: 0,
     bestScore: 0,
     scores: [0, 0, 0, 0, 0, 0],
-    achievements: [],
+    achievements:
+      "achievements" in user
+        ? [...user.achievements, ...achievements]
+        : [...achievements],
   };
 };
 

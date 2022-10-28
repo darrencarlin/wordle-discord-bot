@@ -64,8 +64,8 @@ The bot has 3 slash commands.
 ## Planned/Potential New Features
 
 - Purge a users data
-- Stop users from entering the same wordle twice and more than once a day
 - Better leaderboard sorting (Joint positioning)
+- ~~Stop users from entering the same wordle twice~~
 - ~~Allow ephemeral stats~~
 - ~~Achievements~~
 - ~~Streak tracking `{currentStreak: 0, longestStreak: 0, lastGame: ""}`~~

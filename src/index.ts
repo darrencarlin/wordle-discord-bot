@@ -12,6 +12,7 @@ import {
   leaderboardCommand,
   setChannelCommand,
   statsCommand,
+  achievementsCommand,
 } from "./commands";
 import {
   COMPLETED_ALREADY_TEXT,
@@ -30,6 +31,7 @@ import {
   calculateStreak,
   getWordleNumber,
   calculateAchievements,
+  countCompletedAchievements,
 } from "./util/functions/bot";
 import {
   getGuildWordles,
@@ -43,6 +45,8 @@ import {
 } from "./util/functions/firebase";
 import statsEmbed from "./embeds/stats";
 import achievementsEmbed from "./embeds/achievements";
+import achievementsListEmbed from "./embeds/achievementsList";
+import { achievements } from "./util/achievements";
 
 const client = new Client({
   intents: [
@@ -162,11 +166,29 @@ client.on("interactionCreate", async (interaction: Interaction) => {
       await interaction.reply(SOMETHING_WENT_WRONG_TEXT);
       return;
     }
+
+    if (commandName === "achievements") {
+      const data = await getWordle(guildId as string, userId);
+      if (data) {
+        await interaction.reply({
+          embeds: [achievementsListEmbed(data)],
+          ephemeral: interaction.options.getBoolean("ephemeral") ?? false,
+        });
+      } else {
+        await interaction.reply(NOT_PLAYED_TEXT);
+      }
+      return;
+    }
   }
 });
 
 async function main() {
-  const commands = [leaderboardCommand, statsCommand, setChannelCommand];
+  const commands = [
+    leaderboardCommand,
+    statsCommand,
+    setChannelCommand,
+    achievementsCommand,
+  ];
   try {
     await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
       body: commands,

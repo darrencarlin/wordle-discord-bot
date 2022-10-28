@@ -1,5 +1,5 @@
 // Discord bot functions
-import { achievements } from "../achievements";
+import { achievementChecks } from "../achievements";
 import { USER } from "../constants";
 import { Achievement, User } from "../types";
 
@@ -9,7 +9,15 @@ export const getUserWordleData = (
   username: string
 ) => {
   const user = wordles.find((user) => user.userId === id);
-  return { ...USER(id, username), ...user };
+
+  if (user) return { ...USER(user), ...user };
+
+  return {
+    ...USER({
+      userId: id,
+      usernames: [username],
+    }),
+  };
 };
 
 export const isValidWordleScore = (data: string) => {
@@ -52,7 +60,7 @@ export const generateLeaderboard = (wordles: User[]) => {
       user.averageGuesses
     } guesses per game. / current streak: ${user.currentStreak} / best score: ${
       user.bestScore
-    }`;
+    }\n`;
   });
 
   str += "```";
@@ -171,12 +179,38 @@ export const calculateBestScore = (completed: string, userData: User) => {
   return userData;
 };
 
+export const countCompletedAchievements = (userData: User) => {
+  const count = userData.achievements.filter(
+    (achievement: Achievement) => achievement.complete
+  ).length;
+
+  return count;
+};
+
 export const calculateAchievements = (userData: User) => {
-  const achievementsGained = achievements
-    .map((achievement) => achievement.check(userData))
-    .flatMap((achievement) => (achievement ? [achievement] : []));
+  const achievements = userData.achievements;
+  const newAchievements: Achievement[] = [];
 
-  userData.achievements = [...userData.achievements, ...achievementsGained];
+  userData.achievements = achievements.map((achievement) => {
+    if (achievement.complete) return achievement;
 
-  return { newUserData: userData, newAchievements: achievementsGained };
+    achievement.complete =
+      achievementChecks[achievement.id - 1].check(userData);
+
+    if (achievement.complete) {
+      newAchievements.push(achievement);
+    }
+
+    return achievement;
+  });
+
+  return { newUserData: userData, newAchievements };
+
+  // const achievementsGained = achievements
+  //   .map((achievement) => achievement.check(userData))
+  //   .flatMap((achievement) => (achievement ? [achievement] : []));
+
+  // userData.achievements = [...userData.achievements, ...achievementsGained];
+
+  // return { newUserData: userData, newAchievements: achievementsGained };
 };
