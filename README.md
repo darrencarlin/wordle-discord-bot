@@ -45,21 +45,26 @@ Each guild has it's own users collection in the database. which follows the belo
 
 ## Slash Commands
 
-The bot has 3 slash commands.
+The bot currently has 4 slash commands.
 
 - /set-channel
 - /leaderboard
 - /stats
+- /achievements
 
 /set-channel sets the channel to track wordle entries in. It will only track entries in this channel.
 
 /leaderboard displays a leaderboard that includes all users who have made an entry.
 
-<img width="684" alt="Screen Shot 2022-10-19 at 10 58 52 PM" src="https://user-images.githubusercontent.com/30006190/196846001-3391b8c8-a21b-4594-9f5a-ff2b77fac6c3.png">
+<img width="972" alt="Screen Shot 2022-10-28 at 2 35 47 AM" src="https://user-images.githubusercontent.com/30006190/198519851-adbbdd73-e1e0-4aa4-9c5d-00aec26605fc.png">
 
 /stats displays the users stats
 
-![ss](https://user-images.githubusercontent.com/30006190/197115519-0f03c5f7-e25e-49a4-83c4-d8cbdd86b1e3.png)
+<img width="199" alt="Screen Shot 2022-10-28 at 2 36 32 AM" src="https://user-images.githubusercontent.com/30006190/198519906-7f4e20e5-5093-4178-b39e-1bf7dc13304a.png">
+
+/achievements displays the users achievements
+
+<img width="354" alt="Screen Shot 2022-10-28 at 2 36 16 AM" src="https://user-images.githubusercontent.com/30006190/198520057-4492de5a-fc85-43d1-a4b4-d0afa641c16c.png">
 
 ## Planned/Potential New Features
 
