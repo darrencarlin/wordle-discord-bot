@@ -33,22 +33,18 @@ export const isValidWordleScore = (data: string) => {
 };
 
 export const generateLeaderboard = (wordles: User[]) => {
-  // sort the leaderboard by total games completed
+  // averageGuesses: 0,
+  // currentStreak: 0,
+
+  // sort the leaderboard by averageGuesses
   let leaderboard = wordles.sort((a, b) => {
-    if (a.wordlesCompleted > b.wordlesCompleted) return -1;
-    if (a.wordlesCompleted < b.wordlesCompleted) return 1;
+    if (a.averageGuesses > b.averageGuesses) return -1;
+    if (a.averageGuesses < b.averageGuesses) return 1;
     return 0;
   });
 
-  // sort the leaderboard by percentange completed
+  // sort the leaderboard by currentStreak
   leaderboard.sort((a, b) => {
-    if (a.percentageCompleted > b.percentageCompleted) return -1;
-    if (a.percentageCompleted < b.percentageCompleted) return 1;
-    return 0;
-  });
-
-  // sort the leaderboard by streak
-  leaderboard = wordles.sort((a, b) => {
     if (a.currentStreak > b.currentStreak) return -1;
     if (a.currentStreak < b.currentStreak) return 1;
     return 0;
