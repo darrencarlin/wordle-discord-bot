@@ -1,5 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config();
 import { REST } from "@discordjs/rest";
 import {
   Client,
@@ -8,43 +6,65 @@ import {
   Message,
   Routes,
 } from "discord.js";
+import dotenv from "dotenv";
 import {
+  myAchievementsCommand,
   leaderboardCommand,
+  resetLeaderboardCommand,
+  resetUsersCommand,
+  setRoleCommand,
   setChannelCommand,
-  statsCommand,
-  achievementsCommand,
+  myStatsCommand,
+  purgeUserCommand,
+  userCountCommand,
+  upgradeServerCommand,
+  helpCommand,
 } from "./commands";
+
+import achievementsEmbed from "./embeds/achievements";
+import achievementsListEmbed from "./embeds/achievementsList";
+import helpEmbed from "./embeds/help";
+import statsEmbed from "./embeds/stats";
 import {
   COMPLETED_ALREADY_TEXT,
   INVALID_SCORE_TEXT,
   NOT_PLAYED_TEXT,
+  NO_PERMISSION_TEXT,
+  PURGE_USER,
+  SET_WORDLE_ADMIN_ROLE,
   SOMETHING_WENT_WRONG_TEXT,
+  UPGRADE_SERVER,
+  USER_COUNT,
 } from "./util/constants";
 import {
-  calculateBestScore,
-  checkForNewUsername,
-  calculateUpdatedWordleData,
   generateLeaderboard,
   generateUserStats,
+  getUserLeaderboardData,
   getUserWordleData,
-  isValidWordleScore,
-  calculateStreak,
+  getMessageVariables,
   getWordleNumber,
-  calculateAchievements,
+  isRegularMessage,
+  isValidWordleScore,
+  updateLeaderboardData,
+  updateUserData,
+  getCommandVariables,
 } from "./util/functions/bot";
 import {
-  getGuildWordles,
   createGuild,
   deleteGuild,
-  getWordle,
+  getGuildLeaderboard,
   getGuildWordleChannel,
-  getWordles,
+  getGuildWordles,
+  getUserCount,
+  getWordle,
+  purgeUser,
+  resetLeaderboard,
+  resetUsers,
+  setAdminRole,
   setWordleChannel,
-  updateGuildUserData,
 } from "./util/functions/firebase";
-import statsEmbed from "./embeds/stats";
-import achievementsEmbed from "./embeds/achievements";
-import achievementsListEmbed from "./embeds/achievementsList";
+
+dotenv.config();
 
 const client = new Client({
   intents: [
@@ -70,65 +90,79 @@ client.on("guildDelete", async (guild) => {
   await deleteGuild(guild.id);
 });
 
-client.on("messageCreate", async (c: Message) => {
-  const isRegularMessage =
-    c.author.bot || !c.content.trim().startsWith("Wordle ");
+client.on("messageCreate", async (content: Message) => {
+  if (isRegularMessage(content)) return;
 
-  if (isRegularMessage) return;
-
-  // variable setup
-  const { guildId, channelId } = c as { guildId: string; channelId: string };
-  const { id: userId, username } = c.author;
-
-  // TODO: store this ahead of time potentially to avoid multiple calls
+  const { guildId, channelId, id, username } = getMessageVariables(content);
   const isWordleChannel = await getGuildWordleChannel(guildId, channelId);
 
   if (isWordleChannel) {
     const wordles = await getGuildWordles(guildId);
+    const leaderboards = await getGuildLeaderboard(guildId);
+    const wordleNumber = getWordleNumber(content)!;
 
-    const wordleNumber = getWordleNumber(c.content)!;
-
-    const { isValid, score } = isValidWordleScore(c.content);
+    const { isValid, score } = isValidWordleScore(content);
 
     if (isValid) {
       const [completed, total] = score.split("/");
 
       // Get the existing user data or create a new one
-      let userData = getUserWordleData(wordles, userId, username);
+      const userData = getUserWordleData(wordles, id, username);
+
+      const leaderboardData = getUserLeaderboardData(
+        leaderboards,
+        id,
+        username
+      );
+
       // If the user tries to submit the same wordle or an earlier one, return
       if (wordleNumber <= userData.lastGameNumber) {
-        await c.reply(
+        await content.reply(
           COMPLETED_ALREADY_TEXT(userData.lastGameNumber.toString())
         );
         return;
       }
 
-      // various functions to update the user data
-      userData = checkForNewUsername(username, userData);
-      userData = calculateUpdatedWordleData(completed, total, userData);
-      userData = calculateStreak(completed, userData, wordleNumber);
-      userData = calculateBestScore(completed, userData);
+      const { userData: newData, newAchievements } = await updateUserData({
+        username,
+        data: userData,
+        completed,
+        total,
+        wordleNumber,
+        guildId,
+        id,
+      });
 
-      const { newUserData, newAchievements } = calculateAchievements(userData);
-
-      await updateGuildUserData(guildId, userId, newUserData);
+      await updateLeaderboardData({
+        username,
+        data: leaderboardData,
+        completed,
+        total,
+        wordleNumber,
+        guildId,
+      });
 
       if (newAchievements.length) {
-        await c.reply({
-          embeds: [achievementsEmbed(newUserData, newAchievements)],
+        await content.reply({
+          embeds: [achievementsEmbed(newData, newAchievements)],
         });
       }
     } else {
-      await c.reply(INVALID_SCORE_TEXT);
+      await content.reply(INVALID_SCORE_TEXT);
     }
   }
 });
 
 client.on("interactionCreate", async (interaction: Interaction) => {
   if (interaction.isChatInputCommand()) {
-    const commandName = interaction.commandName;
-    const userId = interaction.user.id;
-    const guildId = interaction.guildId;
+    const {
+      hasValidPermissions,
+      commandName,
+      userId,
+      guildId,
+      channelId,
+      guildName,
+    } = await getCommandVariables(interaction);
 
     if (commandName === "stats") {
       const data = await getWordle(guildId as string, userId);
@@ -141,28 +175,62 @@ client.on("interactionCreate", async (interaction: Interaction) => {
       } else {
         await interaction.reply(NOT_PLAYED_TEXT);
       }
-      return;
     }
 
     if (commandName === "leaderboard") {
-      const wordles = await getWordles(guildId as string);
-      const leaderboard = generateLeaderboard(wordles);
+      const option = interaction.options.getString("sort") ?? "";
+      const wordles = await getGuildLeaderboard(guildId as string);
+      const leaderboard = generateLeaderboard(wordles, option);
       await interaction.reply(leaderboard);
-      return;
+    }
+
+    if (commandName === "reset-leaderboard") {
+      if (hasValidPermissions) {
+        await resetLeaderboard(guildId as string);
+        await interaction.reply("The leaderboard has been reset.");
+      } else {
+        await interaction.reply({
+          content: NO_PERMISSION_TEXT,
+          ephemeral: true,
+        });
+      }
+    }
+
+    if (commandName === "reset-users") {
+      if (hasValidPermissions) {
+        await resetUsers(guildId as string);
+        await interaction.reply("All users have been reset.");
+      } else {
+        await interaction.reply({
+          content: NO_PERMISSION_TEXT,
+          ephemeral: true,
+        });
+      }
     }
 
     if (commandName === "set-channel") {
-      const guildId = interaction.guildId;
-      const channelId = interaction.channelId;
-      const guildName = interaction.guild?.name ?? "";
-
       if (guildId && channelId) {
         await setWordleChannel(guildId, channelId, guildName);
         await interaction.reply("Wordle channel set!");
-        return;
+      } else {
+        await interaction.reply(SOMETHING_WENT_WRONG_TEXT);
       }
-      await interaction.reply(SOMETHING_WENT_WRONG_TEXT);
-      return;
+    }
+
+    if (commandName === "set-admin-role") {
+      const role = interaction.options.getRole("role");
+      if (hasValidPermissions && role) {
+        await setAdminRole(guildId as string, role.id);
+        await interaction.reply({
+          content: SET_WORDLE_ADMIN_ROLE(role.name),
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: NO_PERMISSION_TEXT,
+          ephemeral: true,
+        });
+      }
     }
 
     if (commandName === "achievements") {
@@ -175,7 +243,54 @@ client.on("interactionCreate", async (interaction: Interaction) => {
       } else {
         await interaction.reply(NOT_PLAYED_TEXT);
       }
-      return;
+    }
+
+    if (commandName === "purge-user") {
+      const member = interaction.options.getUser("user");
+
+      if (hasValidPermissions && member) {
+        await purgeUser(guildId as string, member.id);
+        await interaction.reply({
+          content: PURGE_USER(member.username),
+          ephemeral: true,
+        });
+      }
+    }
+
+    if (commandName === "user-count") {
+      if (hasValidPermissions) {
+        const count = await getUserCount(guildId as string);
+        await interaction.reply({
+          content: USER_COUNT(count),
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: NO_PERMISSION_TEXT,
+          ephemeral: true,
+        });
+      }
+    }
+
+    if (commandName === "upgrade-server") {
+      if (hasValidPermissions) {
+        await interaction.reply({
+          content: UPGRADE_SERVER(guildId as string),
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: NO_PERMISSION_TEXT,
+          ephemeral: true,
+        });
+      }
+    }
+
+    if (commandName === "help") {
+      await interaction.reply({
+        embeds: [helpEmbed(hasValidPermissions)],
+        ephemeral: true,
+      });
     }
   }
 });
@@ -183,9 +298,16 @@ client.on("interactionCreate", async (interaction: Interaction) => {
 async function main() {
   const commands = [
     leaderboardCommand,
-    statsCommand,
+    resetLeaderboardCommand,
+    myStatsCommand,
     setChannelCommand,
-    achievementsCommand,
+    myAchievementsCommand,
+    resetUsersCommand,
+    setRoleCommand,
+    purgeUserCommand,
+    userCountCommand,
+    upgradeServerCommand,
+    helpCommand,
   ];
   try {
     await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {

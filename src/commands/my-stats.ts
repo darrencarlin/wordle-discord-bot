@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 
 const statsCommand = new SlashCommandBuilder()
-  .setName("stats")
+  .setName("my-stats")
   .setDescription("Shows your stats")
   .addBooleanOption((option) =>
     option

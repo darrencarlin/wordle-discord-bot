@@ -13,8 +13,8 @@ export interface NewUser {
 }
 
 export interface User {
-  usernames: string[];
   userId: string;
+  usernames: string[];
   wordlesCompleted: number;
   wordlesFailed: number;
   totalWordles: number;
@@ -28,4 +28,11 @@ export interface User {
   bestScore: number;
   scores: number[];
   achievements: Achievement[];
+}
+
+// Discord
+
+export interface DiscordIds {
+  guildId: string;
+  channelId: string;
 }

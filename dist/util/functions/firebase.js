@@ -36,28 +36,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.updateGuildUserData = exports.getGuildWordles = exports.getGuildWordleChannel = exports.setWordleChannel = exports.deleteGuild = exports.createGuild = exports.getWordle = exports.getWordles = void 0;
+exports.getUserCount = exports.purgeUser = exports.getAdminRoleId = exports.setAdminRole = exports.resetUsers = exports.resetLeaderboard = exports.updateGuildLeaderboardData = exports.updateGuildUserData = exports.getGuildLeaderboard = exports.getGuildWordles = exports.getGuildWordleChannel = exports.setWordleChannel = exports.deleteGuild = exports.createGuild = exports.getWordle = void 0;
 // Firebase functions
 var firestore_1 = require("firebase/firestore");
 var firebase_1 = require("../firebase");
-var getWordles = function (id) { return __awaiter(void 0, void 0, void 0, function () {
-    var wordles, usersSubcollection, usersSnapshot;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                wordles = [];
-                usersSubcollection = (0, firestore_1.collection)(firebase_1.db, "guilds", id, "users");
-                return [4 /*yield*/, (0, firestore_1.getDocs)(usersSubcollection)];
-            case 1:
-                usersSnapshot = _a.sent();
-                usersSnapshot.forEach(function (doc) {
-                    wordles.push(doc.data());
-                });
-                return [2 /*return*/, wordles !== null && wordles !== void 0 ? wordles : []];
-        }
-    });
-}); };
-exports.getWordles = getWordles;
 var getWordle = function (id, userId) { return __awaiter(void 0, void 0, void 0, function () {
     var usersSubcollection, userDoc, userDocSnap;
     return __generator(this, function (_a) {
@@ -148,6 +130,24 @@ var getGuildWordles = function (id) { return __awaiter(void 0, void 0, void 0, f
     });
 }); };
 exports.getGuildWordles = getGuildWordles;
+var getGuildLeaderboard = function (id) { return __awaiter(void 0, void 0, void 0, function () {
+    var leaderboardSubcollection, leaderboardSnapshot, leaderboard;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                leaderboardSubcollection = (0, firestore_1.collection)(firebase_1.db, "guilds", id, "leaderboard");
+                return [4 /*yield*/, (0, firestore_1.getDocs)(leaderboardSubcollection)];
+            case 1:
+                leaderboardSnapshot = _a.sent();
+                leaderboard = [];
+                leaderboardSnapshot.forEach(function (doc) {
+                    leaderboard.push(doc.data());
+                });
+                return [2 /*return*/, leaderboard !== null && leaderboard !== void 0 ? leaderboard : []];
+        }
+    });
+}); };
+exports.getGuildLeaderboard = getGuildLeaderboard;
 var updateGuildUserData = function (id, userId, userData) { return __awaiter(void 0, void 0, void 0, function () {
     var usersSubcollection;
     return __generator(this, function (_a) {
@@ -162,3 +162,131 @@ var updateGuildUserData = function (id, userId, userData) { return __awaiter(voi
     });
 }); };
 exports.updateGuildUserData = updateGuildUserData;
+var updateGuildLeaderboardData = function (id, userData) { return __awaiter(void 0, void 0, void 0, function () {
+    var leaderboardSubcollection;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                leaderboardSubcollection = (0, firestore_1.collection)(firebase_1.db, "guilds", id, "leaderboard");
+                return [4 /*yield*/, (0, firestore_1.setDoc)((0, firestore_1.doc)(leaderboardSubcollection, userData.userId), userData, {
+                        merge: true
+                    })];
+            case 1:
+                _a.sent();
+                return [2 /*return*/];
+        }
+    });
+}); };
+exports.updateGuildLeaderboardData = updateGuildLeaderboardData;
+var resetLeaderboard = function (id) { return __awaiter(void 0, void 0, void 0, function () {
+    var leaderboardSubcollection, leaderboardSnapshot;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                leaderboardSubcollection = (0, firestore_1.collection)(firebase_1.db, "guilds", id, "leaderboard");
+                return [4 /*yield*/, (0, firestore_1.getDocs)(leaderboardSubcollection)];
+            case 1:
+                leaderboardSnapshot = _a.sent();
+                leaderboardSnapshot.forEach(function (doc) { return __awaiter(void 0, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, (0, firestore_1.deleteDoc)(doc.ref)];
+                            case 1:
+                                _a.sent();
+                                return [2 /*return*/];
+                        }
+                    });
+                }); });
+                return [2 /*return*/];
+        }
+    });
+}); };
+exports.resetLeaderboard = resetLeaderboard;
+var resetUsers = function (id) { return __awaiter(void 0, void 0, void 0, function () {
+    var usersSubcollection, usersSnapshot;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                usersSubcollection = (0, firestore_1.collection)(firebase_1.db, "guilds", id, "users");
+                return [4 /*yield*/, (0, firestore_1.getDocs)(usersSubcollection)];
+            case 1:
+                usersSnapshot = _a.sent();
+                usersSnapshot.forEach(function (doc) { return __awaiter(void 0, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, (0, firestore_1.deleteDoc)(doc.ref)];
+                            case 1:
+                                _a.sent();
+                                return [2 /*return*/];
+                        }
+                    });
+                }); });
+                return [2 /*return*/];
+        }
+    });
+}); };
+exports.resetUsers = resetUsers;
+var setAdminRole = function (id, roleId) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, (0, firestore_1.setDoc)((0, firestore_1.doc)(firebase_1.db, "guilds", id), { adminRoleId: roleId }, { merge: true })];
+            case 1:
+                _a.sent();
+                return [2 /*return*/];
+        }
+    });
+}); };
+exports.setAdminRole = setAdminRole;
+var getAdminRoleId = function (id) { return __awaiter(void 0, void 0, void 0, function () {
+    var docRef, docSnap;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                docRef = (0, firestore_1.doc)(firebase_1.db, "guilds", id);
+                return [4 /*yield*/, (0, firestore_1.getDoc)(docRef)];
+            case 1:
+                docSnap = _b.sent();
+                if (docSnap.exists()) {
+                    return [2 /*return*/, (_a = docSnap.data()) === null || _a === void 0 ? void 0 : _a.adminRoleId];
+                }
+                else {
+                    return [2 /*return*/, ""];
+                }
+                return [2 /*return*/];
+        }
+    });
+}); };
+exports.getAdminRoleId = getAdminRoleId;
+var purgeUser = function (id, userId) { return __awaiter(void 0, void 0, void 0, function () {
+    var usersSubcollection, leaderboardSubcollection;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                usersSubcollection = (0, firestore_1.collection)(firebase_1.db, "guilds", id, "users");
+                leaderboardSubcollection = (0, firestore_1.collection)(firebase_1.db, "guilds", id, "leaderboard");
+                return [4 /*yield*/, (0, firestore_1.deleteDoc)((0, firestore_1.doc)(usersSubcollection, userId))];
+            case 1:
+                _a.sent();
+                return [4 /*yield*/, (0, firestore_1.deleteDoc)((0, firestore_1.doc)(leaderboardSubcollection, userId))];
+            case 2:
+                _a.sent();
+                return [2 /*return*/];
+        }
+    });
+}); };
+exports.purgeUser = purgeUser;
+var getUserCount = function (id) { return __awaiter(void 0, void 0, void 0, function () {
+    var usersSubcollection, usersSnapshot;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                usersSubcollection = (0, firestore_1.collection)(firebase_1.db, "guilds", id, "users");
+                return [4 /*yield*/, (0, firestore_1.getDocs)(usersSubcollection)];
+            case 1:
+                usersSnapshot = _a.sent();
+                return [2 /*return*/, usersSnapshot.size];
+        }
+    });
+}); };
+exports.getUserCount = getUserCount;

@@ -1,7 +1,53 @@
 // Discord bot functions
+import {
+  CommandInteraction,
+  GuildMemberRoleManager,
+  Message,
+} from "discord.js";
 import { achievementChecks } from "../achievements";
-import { USER } from "../constants";
-import { Achievement, User } from "../types";
+import { NO_LEADERBOARD_DATA, POPULATE_USER } from "../constants";
+import { Achievement, DiscordIds, User } from "../types";
+import {
+  getAdminRoleId,
+  updateGuildLeaderboardData,
+  updateGuildUserData,
+} from "./firebase";
+
+export const getMessageVariables = (content: Message) => {
+  const { guildId, channelId } = content as DiscordIds;
+  const { id, username } = content.author;
+  return { guildId, channelId, id, username };
+};
+
+export const getCommandVariables = async (interaction: CommandInteraction) => {
+  const serverOwnerId = interaction.guild?.ownerId;
+  const commandName = interaction.commandName;
+  const userId = interaction.user.id;
+  const guildId = interaction.guildId;
+  const channelId = interaction.channelId;
+  const guildName = interaction.guild?.name as string;
+
+  const adminRoleId = await getAdminRoleId(guildId ?? "");
+  const isAdmin = (
+    interaction?.member?.roles as GuildMemberRoleManager
+  ).cache.has(adminRoleId);
+
+  const serverOwner = serverOwnerId === userId;
+
+  const hasValidPermissions = isAdmin || serverOwner;
+
+  return {
+    hasValidPermissions,
+    commandName,
+    userId,
+    guildId,
+    channelId,
+    guildName,
+  };
+};
+
+export const isRegularMessage = (content: Message) =>
+  content.author.bot || !content.content.trim().startsWith("Wordle ");
 
 export const getUserWordleData = (
   wordles: User[],
@@ -10,18 +56,35 @@ export const getUserWordleData = (
 ) => {
   const user = wordles.find((user) => user.userId === id);
 
-  if (user) return { ...USER(user), ...user };
+  if (user) {
+    return { ...POPULATE_USER(user), ...user };
+  }
+
+  const newUser = { userId: id, usernames: [username] };
 
   return {
-    ...USER({
-      userId: id,
-      usernames: [username],
-    }),
+    ...POPULATE_USER(newUser),
   };
 };
 
-export const isValidWordleScore = (data: string) => {
-  const firstLine = data.split("\n")[0];
+export const getUserLeaderboardData = (
+  leaderboards: User[],
+  id: string,
+  username: string
+) => {
+  const user = leaderboards.find((user) => user.userId === id);
+
+  if (user) return { ...POPULATE_USER(user), ...user };
+
+  const newUser = { userId: id, usernames: [username] };
+
+  return {
+    ...POPULATE_USER(newUser),
+  };
+};
+
+export const isValidWordleScore = (content: Message) => {
+  const firstLine = content.content.split("\n")[0];
   // Get the score
   const score = firstLine.substring(firstLine.length - 3);
   // Regex to test score
@@ -32,12 +95,23 @@ export const isValidWordleScore = (data: string) => {
   return { isValid, score };
 };
 
-export const generateLeaderboard = (wordles: User[]) => {
-  // averageGuesses: 0,
-  // currentStreak: 0,
+export const sortLeaderboard = (wordles: User[], option: string) => {
+  let leaderboard;
+
+  if (option) {
+    const key = option as keyof User;
+
+    leaderboard = wordles.sort((a, b) => {
+      if (a[key] > b[key]) return -1;
+      if (a[key] < b[key]) return 1;
+      return 0;
+    });
+
+    return leaderboard;
+  }
 
   // sort the leaderboard by averageGuesses
-  let leaderboard = wordles.sort((a, b) => {
+  leaderboard = wordles.sort((a, b) => {
     if (a.averageGuesses > b.averageGuesses) return -1;
     if (a.averageGuesses < b.averageGuesses) return 1;
     return 0;
@@ -50,9 +124,15 @@ export const generateLeaderboard = (wordles: User[]) => {
     return 0;
   });
 
+  return leaderboard;
+};
+
+export const generateLeaderboard = (wordles: User[], option: string) => {
+  let leaderboard = sortLeaderboard(wordles, option);
+
   let str = "```";
 
-  leaderboard.forEach((user, index) => {
+  leaderboard?.forEach((user, index) => {
     str += `#${index + 1}. ${user.usernames[0]} - ${
       user.percentageCompleted
     }% completed / ${user.totalWordles} games / average ${
@@ -63,6 +143,10 @@ export const generateLeaderboard = (wordles: User[]) => {
   });
 
   str += "```";
+
+  if (str === "``````") {
+    return NO_LEADERBOARD_DATA;
+  }
 
   return str;
 };
@@ -86,8 +170,8 @@ export const generateUserStats = (data: User) => {
   return stats;
 };
 
-export const getWordleNumber = (content: string) => {
-  const wordleNumber = content.split(" ")[1];
+export const getWordleNumber = (content: Message) => {
+  const wordleNumber = content.content.split(" ")[1];
   if (wordleNumber) {
     return Number(wordleNumber);
   }
@@ -187,29 +271,72 @@ export const countCompletedAchievements = (userData: User) => {
 };
 
 export const calculateAchievements = (userData: User) => {
-  const achievements = userData.achievements;
   const newAchievements: Achievement[] = [];
 
-  userData.achievements = achievements.map((achievement) => {
-    if (achievement.complete) return achievement;
+  userData.achievements.map((achieve) => {
+    const isComplete = achievementChecks[achieve.id - 1].check(userData);
 
-    achievement.complete =
-      achievementChecks[achievement.id - 1].check(userData);
-
-    if (achievement.complete) {
-      newAchievements.push(achievement);
+    if (isComplete && !achieve.complete) {
+      newAchievements.push(achieve);
+      achieve.complete = true;
     }
 
-    return achievement;
+    return achieve;
   });
 
-  return { newUserData: userData, newAchievements };
+  return { userData, newAchievements };
+};
 
-  // const achievementsGained = achievements
-  //   .map((achievement) => achievement.check(userData))
-  //   .flatMap((achievement) => (achievement ? [achievement] : []));
+interface UpdateUserDataProps {
+  username: string;
+  data: User;
+  completed: string;
+  total: string;
+  wordleNumber: number;
+  guildId: string;
+  id: string;
+}
 
-  // userData.achievements = [...userData.achievements, ...achievementsGained];
+export const updateUserData = async ({
+  username,
+  data,
+  completed,
+  total,
+  wordleNumber,
+  guildId,
+  id,
+}: UpdateUserDataProps) => {
+  // Update the user data
+  data = checkForNewUsername(username, data);
+  data = calculateUpdatedWordleData(completed, total, data);
+  data = calculateStreak(completed, data, wordleNumber);
+  data = calculateBestScore(completed, data);
+  const { userData, newAchievements } = calculateAchievements(data);
 
-  // return { newUserData: userData, newAchievements: achievementsGained };
+  await updateGuildUserData(guildId, id, userData);
+  return { userData, newAchievements };
+};
+
+interface UpdateLeaderboardDataProps {
+  username: string;
+  data: User;
+  completed: string;
+  total: string;
+  wordleNumber: number;
+  guildId: string;
+}
+
+export const updateLeaderboardData = async ({
+  username,
+  data,
+  completed,
+  total,
+  wordleNumber,
+  guildId,
+}: UpdateLeaderboardDataProps) => {
+  data = checkForNewUsername(username, data);
+  data = calculateUpdatedWordleData(completed, total, data);
+  data = calculateStreak(completed, data, wordleNumber);
+  data = calculateBestScore(completed, data);
+  await updateGuildLeaderboardData(guildId, data);
 };

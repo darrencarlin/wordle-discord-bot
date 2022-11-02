@@ -10,27 +10,106 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
-    return to.concat(ar || Array.prototype.slice.call(from));
 };
 exports.__esModule = true;
-exports.calculateAchievements = exports.calculateBestScore = exports.calculateStreak = exports.calculateUpdatedWordleData = exports.checkForNewUsername = exports.getWordleNumber = exports.generateUserStats = exports.generateLeaderboard = exports.isValidWordleScore = exports.getUserWordleData = void 0;
-// Discord bot functions
+exports.updateLeaderboardData = exports.updateUserData = exports.calculateAchievements = exports.countCompletedAchievements = exports.calculateBestScore = exports.calculateStreak = exports.calculateUpdatedWordleData = exports.checkForNewUsername = exports.getWordleNumber = exports.generateUserStats = exports.generateLeaderboard = exports.sortLeaderboard = exports.isValidWordleScore = exports.getUserLeaderboardData = exports.getUserWordleData = exports.isRegularMessage = exports.getCommandVariables = exports.getMessageVariables = void 0;
 var achievements_1 = require("../achievements");
 var constants_1 = require("../constants");
+var firebase_1 = require("./firebase");
+var getMessageVariables = function (content) {
+    var _a = content, guildId = _a.guildId, channelId = _a.channelId;
+    var _b = content.author, id = _b.id, username = _b.username;
+    return { guildId: guildId, channelId: channelId, id: id, username: username };
+};
+exports.getMessageVariables = getMessageVariables;
+var getCommandVariables = function (interaction) { return __awaiter(void 0, void 0, void 0, function () {
+    var serverOwnerId, commandName, userId, guildId, channelId, guildName, adminRoleId, isAdmin, serverOwner, hasValidPermissions;
+    var _a, _b, _c;
+    return __generator(this, function (_d) {
+        switch (_d.label) {
+            case 0:
+                serverOwnerId = (_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.ownerId;
+                commandName = interaction.commandName;
+                userId = interaction.user.id;
+                guildId = interaction.guildId;
+                channelId = interaction.channelId;
+                guildName = (_b = interaction.guild) === null || _b === void 0 ? void 0 : _b.name;
+                return [4 /*yield*/, (0, firebase_1.getAdminRoleId)(guildId !== null && guildId !== void 0 ? guildId : "")];
+            case 1:
+                adminRoleId = _d.sent();
+                isAdmin = ((_c = interaction === null || interaction === void 0 ? void 0 : interaction.member) === null || _c === void 0 ? void 0 : _c.roles).cache.has(adminRoleId);
+                serverOwner = serverOwnerId === userId;
+                hasValidPermissions = isAdmin || serverOwner;
+                return [2 /*return*/, {
+                        hasValidPermissions: hasValidPermissions,
+                        commandName: commandName,
+                        userId: userId,
+                        guildId: guildId,
+                        channelId: channelId,
+                        guildName: guildName
+                    }];
+        }
+    });
+}); };
+exports.getCommandVariables = getCommandVariables;
+var isRegularMessage = function (content) {
+    return content.author.bot || !content.content.trim().startsWith("Wordle ");
+};
+exports.isRegularMessage = isRegularMessage;
 var getUserWordleData = function (wordles, id, username) {
     var user = wordles.find(function (user) { return user.userId === id; });
-    return __assign(__assign({}, (0, constants_1.USER)(id, username)), user);
+    if (user) {
+        return __assign(__assign({}, (0, constants_1.POPULATE_USER)(user)), user);
+    }
+    var newUser = { userId: id, usernames: [username] };
+    return __assign({}, (0, constants_1.POPULATE_USER)(newUser));
 };
 exports.getUserWordleData = getUserWordleData;
-var isValidWordleScore = function (data) {
-    var firstLine = data.split("\n")[0];
+var getUserLeaderboardData = function (leaderboards, id, username) {
+    var user = leaderboards.find(function (user) { return user.userId === id; });
+    if (user)
+        return __assign(__assign({}, (0, constants_1.POPULATE_USER)(user)), user);
+    var newUser = { userId: id, usernames: [username] };
+    return __assign({}, (0, constants_1.POPULATE_USER)(newUser));
+};
+exports.getUserLeaderboardData = getUserLeaderboardData;
+var isValidWordleScore = function (content) {
+    var firstLine = content.content.split("\n")[0];
     // Get the score
     var score = firstLine.substring(firstLine.length - 3);
     // Regex to test score
@@ -40,28 +119,48 @@ var isValidWordleScore = function (data) {
     return { isValid: isValid, score: score };
 };
 exports.isValidWordleScore = isValidWordleScore;
-var generateLeaderboard = function (wordles) {
-    // Sort the leaderboard by percentageCompleted if the totalWordles are the same, then by averageGuesses, then by totalWordles, then by currentStreak, then by bestScore.
-    var leaderboard = wordles.sort(function (a, b) {
-        if (a.percentageCompleted === b.percentageCompleted) {
-            if (a.averageGuesses === b.averageGuesses) {
-                if (a.totalWordles === b.totalWordles) {
-                    if (a.currentStreak === b.currentStreak) {
-                        return b.bestScore - a.bestScore;
-                    }
-                    return b.currentStreak - a.currentStreak;
-                }
-                return b.totalWordles - a.totalWordles;
-            }
-            return a.averageGuesses - b.averageGuesses;
-        }
-        return b.percentageCompleted - a.percentageCompleted;
+var sortLeaderboard = function (wordles, option) {
+    var leaderboard;
+    if (option) {
+        var key_1 = option;
+        leaderboard = wordles.sort(function (a, b) {
+            if (a[key_1] > b[key_1])
+                return -1;
+            if (a[key_1] < b[key_1])
+                return 1;
+            return 0;
+        });
+        return leaderboard;
+    }
+    // sort the leaderboard by averageGuesses
+    leaderboard = wordles.sort(function (a, b) {
+        if (a.averageGuesses > b.averageGuesses)
+            return -1;
+        if (a.averageGuesses < b.averageGuesses)
+            return 1;
+        return 0;
     });
+    // sort the leaderboard by currentStreak
+    leaderboard.sort(function (a, b) {
+        if (a.currentStreak > b.currentStreak)
+            return -1;
+        if (a.currentStreak < b.currentStreak)
+            return 1;
+        return 0;
+    });
+    return leaderboard;
+};
+exports.sortLeaderboard = sortLeaderboard;
+var generateLeaderboard = function (wordles, option) {
+    var leaderboard = (0, exports.sortLeaderboard)(wordles, option);
     var str = "```";
-    leaderboard.forEach(function (user, index) {
-        str += "#".concat(index + 1, ". ").concat(user.usernames[0], " - ").concat(user.percentageCompleted, "% completed / ").concat(user.totalWordles, " games / average ").concat(user.averageGuesses, " guesses per game. / current streak: ").concat(user.currentStreak, " / best score: ").concat(user.bestScore);
+    leaderboard === null || leaderboard === void 0 ? void 0 : leaderboard.forEach(function (user, index) {
+        str += "#".concat(index + 1, ". ").concat(user.usernames[0], " - ").concat(user.percentageCompleted, "% completed / ").concat(user.totalWordles, " games / average ").concat(user.averageGuesses, " guesses per game. / current streak: ").concat(user.currentStreak, " / best score: ").concat(user.bestScore, "\n");
     });
     str += "```";
+    if (str === "``````") {
+        return constants_1.NO_LEADERBOARD_DATA;
+    }
     return str;
 };
 exports.generateLeaderboard = generateLeaderboard;
@@ -81,7 +180,7 @@ var generateUserStats = function (data) {
 };
 exports.generateUserStats = generateUserStats;
 var getWordleNumber = function (content) {
-    var wordleNumber = content.split(" ")[1];
+    var wordleNumber = content.content.split(" ")[1];
     if (wordleNumber) {
         return Number(wordleNumber);
     }
@@ -147,11 +246,62 @@ var calculateBestScore = function (completed, userData) {
     return userData;
 };
 exports.calculateBestScore = calculateBestScore;
+var countCompletedAchievements = function (userData) {
+    var count = userData.achievements.filter(function (achievement) { return achievement.complete; }).length;
+    return count;
+};
+exports.countCompletedAchievements = countCompletedAchievements;
 var calculateAchievements = function (userData) {
-    var achievementsGained = achievements_1.achievements
-        .map(function (achievement) { return achievement.check(userData); })
-        .flatMap(function (achievement) { return (achievement ? [achievement] : []); });
-    userData.achievements = __spreadArray(__spreadArray([], userData.achievements, true), achievementsGained, true);
-    return { newUserData: userData, newAchievements: achievementsGained };
+    var newAchievements = [];
+    userData.achievements.map(function (achieve) {
+        var isComplete = achievements_1.achievementChecks[achieve.id - 1].check(userData);
+        if (isComplete && !achieve.complete) {
+            newAchievements.push(achieve);
+            achieve.complete = true;
+        }
+        return achieve;
+    });
+    return { userData: userData, newAchievements: newAchievements };
 };
 exports.calculateAchievements = calculateAchievements;
+var updateUserData = function (_a) {
+    var username = _a.username, data = _a.data, completed = _a.completed, total = _a.total, wordleNumber = _a.wordleNumber, guildId = _a.guildId, id = _a.id;
+    return __awaiter(void 0, void 0, void 0, function () {
+        var _b, userData, newAchievements;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    // Update the user data
+                    data = (0, exports.checkForNewUsername)(username, data);
+                    data = (0, exports.calculateUpdatedWordleData)(completed, total, data);
+                    data = (0, exports.calculateStreak)(completed, data, wordleNumber);
+                    data = (0, exports.calculateBestScore)(completed, data);
+                    _b = (0, exports.calculateAchievements)(data), userData = _b.userData, newAchievements = _b.newAchievements;
+                    return [4 /*yield*/, (0, firebase_1.updateGuildUserData)(guildId, id, userData)];
+                case 1:
+                    _c.sent();
+                    return [2 /*return*/, { userData: userData, newAchievements: newAchievements }];
+            }
+        });
+    });
+};
+exports.updateUserData = updateUserData;
+var updateLeaderboardData = function (_a) {
+    var username = _a.username, data = _a.data, completed = _a.completed, total = _a.total, wordleNumber = _a.wordleNumber, guildId = _a.guildId;
+    return __awaiter(void 0, void 0, void 0, function () {
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    data = (0, exports.checkForNewUsername)(username, data);
+                    data = (0, exports.calculateUpdatedWordleData)(completed, total, data);
+                    data = (0, exports.calculateStreak)(completed, data, wordleNumber);
+                    data = (0, exports.calculateBestScore)(completed, data);
+                    return [4 /*yield*/, (0, firebase_1.updateGuildLeaderboardData)(guildId, data)];
+                case 1:
+                    _b.sent();
+                    return [2 /*return*/];
+            }
+        });
+    });
+};
+exports.updateLeaderboardData = updateLeaderboardData;
