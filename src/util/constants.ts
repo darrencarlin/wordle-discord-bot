@@ -128,6 +128,7 @@ export const POPULATE_USER = (user: User | NewUser): User => {
   const wordlesCompleted = "wordlesCompleted" in user;
 
   if (wordlesCompleted) {
+    const merged = [...achievements, ...user.achievements];
     return {
       userId: user.userId,
       usernames: [...user.usernames],
@@ -143,7 +144,7 @@ export const POPULATE_USER = (user: User | NewUser): User => {
       lastGameNumber: user.lastGameNumber,
       bestScore: user.bestScore,
       scores: user.scores,
-      achievements: [...user.achievements, ...achievements],
+      achievements: merged,
     };
   }
   return {
