@@ -164,7 +164,7 @@ client.on("interactionCreate", async (interaction: Interaction) => {
       guildName,
     } = await getCommandVariables(interaction);
 
-    if (commandName === "stats") {
+    if (commandName === "my-stats") {
       const data = await getWordle(guildId as string, userId);
       if (data) {
         const stats = generateUserStats(data);
@@ -217,7 +217,7 @@ client.on("interactionCreate", async (interaction: Interaction) => {
       }
     }
 
-    if (commandName === "set-admin-role") {
+    if (commandName === "set-role") {
       const role = interaction.options.getRole("role");
       if (hasValidPermissions && role) {
         await setAdminRole(guildId as string, role.id);
@@ -233,7 +233,7 @@ client.on("interactionCreate", async (interaction: Interaction) => {
       }
     }
 
-    if (commandName === "achievements") {
+    if (commandName === "my-achievements") {
       const data = await getWordle(guildId as string, userId);
       if (data) {
         await interaction.reply({
