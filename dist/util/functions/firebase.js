@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.getUserCount = exports.purgeUser = exports.getAdminRoleId = exports.setAdminRole = exports.resetUsers = exports.resetLeaderboard = exports.updateGuildLeaderboardData = exports.updateGuildUserData = exports.getGuildLeaderboard = exports.getGuildWordles = exports.getGuildWordleChannel = exports.setWordleChannel = exports.deleteGuild = exports.createGuild = exports.getWordle = void 0;
+exports.logError = exports.getUserCount = exports.purgeUser = exports.getAdminRoleId = exports.setAdminRole = exports.resetUsers = exports.resetLeaderboard = exports.updateGuildLeaderboardData = exports.updateGuildUserData = exports.getGuildLeaderboard = exports.getGuildWordles = exports.getGuildWordleChannel = exports.setWordleChannel = exports.deleteGuild = exports.createGuild = exports.getWordle = void 0;
 // Firebase functions
 var firestore_1 = require("firebase/firestore");
 var firebase_1 = require("../firebase");
@@ -290,3 +290,17 @@ var getUserCount = function (id) { return __awaiter(void 0, void 0, void 0, func
     });
 }); };
 exports.getUserCount = getUserCount;
+var logError = function (error, type) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, (0, firestore_1.setDoc)((0, firestore_1.doc)(firebase_1.db, "errors", Date.now().toString()), {
+                    error: error,
+                    type: type
+                })];
+            case 1:
+                _a.sent();
+                return [2 /*return*/];
+        }
+    });
+}); };
+exports.logError = logError;

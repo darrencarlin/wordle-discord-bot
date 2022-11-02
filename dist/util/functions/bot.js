@@ -123,11 +123,13 @@ var sortLeaderboard = function (wordles, option) {
     var leaderboard;
     if (option) {
         var key_1 = option;
+        // lower is better
+        var oppositeSortOrder_1 = key_1 === "averageGuesses" || key_1 === "bestScore";
         leaderboard = wordles.sort(function (a, b) {
             if (a[key_1] > b[key_1])
-                return -1;
+                return oppositeSortOrder_1 ? 1 : -1;
             if (a[key_1] < b[key_1])
-                return 1;
+                return oppositeSortOrder_1 ? 1 : -1;
             return 0;
         });
         return leaderboard;
@@ -135,9 +137,9 @@ var sortLeaderboard = function (wordles, option) {
     // sort the leaderboard by averageGuesses
     leaderboard = wordles.sort(function (a, b) {
         if (a.averageGuesses > b.averageGuesses)
-            return -1;
-        if (a.averageGuesses < b.averageGuesses)
             return 1;
+        if (a.averageGuesses < b.averageGuesses)
+            return -1;
         return 0;
     });
     // sort the leaderboard by currentStreak
@@ -155,7 +157,7 @@ var generateLeaderboard = function (wordles, option) {
     var leaderboard = (0, exports.sortLeaderboard)(wordles, option);
     var str = "```";
     leaderboard === null || leaderboard === void 0 ? void 0 : leaderboard.forEach(function (user, index) {
-        str += "#".concat(index + 1, ". ").concat(user.usernames[0], " - ").concat(user.percentageCompleted, "% completed / ").concat(user.totalWordles, " games / average ").concat(user.averageGuesses, " guesses per game. / current streak: ").concat(user.currentStreak, " / best score: ").concat(user.bestScore, "\n");
+        str += "#".concat(index + 1, ". ").concat(user.usernames[0], " - ").concat(user.totalWordles, " games (").concat(user.percentageCompleted, "% completed) / average ").concat(user.averageGuesses, " guesses per game. / current streak: ").concat(user.currentStreak, " / best score: ").concat(user.bestScore, "\n");
     });
     str += "```";
     if (str === "``````") {

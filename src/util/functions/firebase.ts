@@ -132,3 +132,10 @@ export const getUserCount = async (id: string) => {
   const usersSnapshot = await getDocs(usersSubcollection);
   return usersSnapshot.size;
 };
+
+export const logError = async (error: string, type: string) => {
+  await setDoc(doc(db, "errors", Date.now().toString()), {
+    error,
+    type,
+  });
+};

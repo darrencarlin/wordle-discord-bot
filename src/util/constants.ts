@@ -128,7 +128,21 @@ export const POPULATE_USER = (user: User | NewUser): User => {
   const wordlesCompleted = "wordlesCompleted" in user;
 
   if (wordlesCompleted) {
-    const merged = [...achievements, ...user.achievements];
+    const currAchievements = user.achievements;
+
+    // loop through achievements constant
+    achievements.forEach((element) => {
+      // does the user achievements include achievement being looped over?
+      const found = currAchievements.find(
+        (achievement) => achievement.id === element.id
+      );
+
+      // if it doesn't find it we should add it to the user achievements
+      if (!found) {
+        currAchievements.push(element);
+      }
+    });
+
     return {
       userId: user.userId,
       usernames: [...user.usernames],
@@ -144,7 +158,7 @@ export const POPULATE_USER = (user: User | NewUser): User => {
       lastGameNumber: user.lastGameNumber,
       bestScore: user.bestScore,
       scores: user.scores,
-      achievements: merged,
+      achievements: currAchievements,
     };
   }
   return {

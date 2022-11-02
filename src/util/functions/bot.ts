@@ -6,7 +6,13 @@ import {
 } from "discord.js";
 import { achievementChecks } from "../achievements";
 import { NO_LEADERBOARD_DATA, POPULATE_USER } from "../constants";
-import { Achievement, DiscordIds, User } from "../types";
+import {
+  Achievement,
+  DiscordIds,
+  UpdateLeaderboardDataProps,
+  UpdateUserDataProps,
+  User,
+} from "../types";
 import {
   getAdminRoleId,
   updateGuildLeaderboardData,
@@ -101,9 +107,12 @@ export const sortLeaderboard = (wordles: User[], option: string) => {
   if (option) {
     const key = option as keyof User;
 
+    // lower is better
+    const oppositeSortOrder = key === "averageGuesses" || key === "bestScore";
+
     leaderboard = wordles.sort((a, b) => {
-      if (a[key] > b[key]) return -1;
-      if (a[key] < b[key]) return 1;
+      if (a[key] > b[key]) return oppositeSortOrder ? 1 : -1;
+      if (a[key] < b[key]) return oppositeSortOrder ? 1 : -1;
       return 0;
     });
 
@@ -112,8 +121,8 @@ export const sortLeaderboard = (wordles: User[], option: string) => {
 
   // sort the leaderboard by averageGuesses
   leaderboard = wordles.sort((a, b) => {
-    if (a.averageGuesses > b.averageGuesses) return -1;
-    if (a.averageGuesses < b.averageGuesses) return 1;
+    if (a.averageGuesses > b.averageGuesses) return 1;
+    if (a.averageGuesses < b.averageGuesses) return -1;
     return 0;
   });
 
@@ -133,9 +142,9 @@ export const generateLeaderboard = (wordles: User[], option: string) => {
   let str = "```";
 
   leaderboard?.forEach((user, index) => {
-    str += `#${index + 1}. ${user.usernames[0]} - ${
+    str += `#${index + 1}. ${user.usernames[0]} - ${user.totalWordles} games (${
       user.percentageCompleted
-    }% completed / ${user.totalWordles} games / average ${
+    }% completed) / average ${
       user.averageGuesses
     } guesses per game. / current streak: ${user.currentStreak} / best score: ${
       user.bestScore
@@ -287,16 +296,6 @@ export const calculateAchievements = (userData: User) => {
   return { userData, newAchievements };
 };
 
-interface UpdateUserDataProps {
-  username: string;
-  data: User;
-  completed: string;
-  total: string;
-  wordleNumber: number;
-  guildId: string;
-  id: string;
-}
-
 export const updateUserData = async ({
   username,
   data,
@@ -316,15 +315,6 @@ export const updateUserData = async ({
   await updateGuildUserData(guildId, id, userData);
   return { userData, newAchievements };
 };
-
-interface UpdateLeaderboardDataProps {
-  username: string;
-  data: User;
-  completed: string;
-  total: string;
-  wordleNumber: number;
-  guildId: string;
-}
 
 export const updateLeaderboardData = async ({
   username,

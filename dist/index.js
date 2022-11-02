@@ -42,11 +42,8 @@ exports.__esModule = true;
 var rest_1 = require("@discordjs/rest");
 var discord_js_1 = require("discord.js");
 var dotenv_1 = __importDefault(require("dotenv"));
-var commands_1 = require("./commands");
-var achievements_1 = __importDefault(require("./embeds/achievements"));
-var achievementsList_1 = __importDefault(require("./embeds/achievementsList"));
-var help_1 = __importDefault(require("./embeds/help"));
-var stats_1 = __importDefault(require("./embeds/stats"));
+var commands_1 = __importDefault(require("./commands"));
+var embeds_1 = require("./embeds");
 var constants_1 = require("./util/constants");
 var bot_1 = require("./util/functions/bot");
 var firebase_1 = require("./util/functions/firebase");
@@ -88,10 +85,11 @@ client.on("guildDelete", function (guild) { return __awaiter(void 0, void 0, voi
     });
 }); });
 client.on("messageCreate", function (content) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, guildId, channelId, id, username, isWordleChannel, wordles, leaderboards, wordleNumber, _b, isValid, score, _c, completed, total, userData, leaderboardData, _d, newData, newAchievements;
+    var _a, guildId, channelId, id, username, isWordleChannel, wordles, leaderboards, wordleNumber, _b, isValid, score, _c, completed, total, userData, leaderboardData, _d, newData, newAchievements, error_1;
     return __generator(this, function (_e) {
         switch (_e.label) {
             case 0:
+                _e.trys.push([0, 13, , 15]);
                 if ((0, bot_1.isRegularMessage)(content))
                     return [2 /*return*/];
                 _a = (0, bot_1.getMessageVariables)(content), guildId = _a.guildId, channelId = _a.channelId, id = _a.id, username = _a.username;
@@ -139,7 +137,7 @@ client.on("messageCreate", function (content) { return __awaiter(void 0, void 0,
                 _e.sent();
                 if (!newAchievements.length) return [3 /*break*/, 9];
                 return [4 /*yield*/, content.reply({
-                        embeds: [(0, achievements_1["default"])(newData, newAchievements)]
+                        embeds: [(0, embeds_1.achievementsEmbed)(newData, newAchievements)]
                     })];
             case 8:
                 _e.sent();
@@ -149,234 +147,238 @@ client.on("messageCreate", function (content) { return __awaiter(void 0, void 0,
             case 11:
                 _e.sent();
                 _e.label = 12;
-            case 12: return [2 /*return*/];
+            case 12: return [3 /*break*/, 15];
+            case 13:
+                error_1 = _e.sent();
+                return [4 /*yield*/, content.reply(constants_1.SOMETHING_WENT_WRONG_TEXT)];
+            case 14:
+                _e.sent();
+                (0, firebase_1.logError)(error_1.message, "messageCreate");
+                return [3 /*break*/, 15];
+            case 15: return [2 /*return*/];
         }
     });
 }); });
 client.on("interactionCreate", function (interaction) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, hasValidPermissions, commandName, userId, guildId, channelId, guildName, data, stats, option, wordles, leaderboard, role, data, member, count;
+    var _a, hasValidPermissions, commandName, userId, guildId, channelId, guildName, data, stats, option, wordles, leaderboard, role, data, member, count, error_2;
     var _b, _c, _d;
     return __generator(this, function (_e) {
         switch (_e.label) {
             case 0:
-                if (!interaction.isChatInputCommand()) return [3 /*break*/, 48];
-                return [4 /*yield*/, (0, bot_1.getCommandVariables)(interaction)];
+                if (!interaction.isChatInputCommand()) return [3 /*break*/, 52];
+                _e.label = 1;
             case 1:
-                _a = _e.sent(), hasValidPermissions = _a.hasValidPermissions, commandName = _a.commandName, userId = _a.userId, guildId = _a.guildId, channelId = _a.channelId, guildName = _a.guildName;
-                if (!(commandName === "stats")) return [3 /*break*/, 6];
-                return [4 /*yield*/, (0, firebase_1.getWordle)(guildId, userId)];
+                _e.trys.push([1, 50, , 52]);
+                return [4 /*yield*/, (0, bot_1.getCommandVariables)(interaction)];
             case 2:
+                _a = _e.sent(), hasValidPermissions = _a.hasValidPermissions, commandName = _a.commandName, userId = _a.userId, guildId = _a.guildId, channelId = _a.channelId, guildName = _a.guildName;
+                if (!(commandName === "my-stats")) return [3 /*break*/, 7];
+                return [4 /*yield*/, (0, firebase_1.getWordle)(guildId, userId)];
+            case 3:
                 data = _e.sent();
-                if (!data) return [3 /*break*/, 4];
+                if (!data) return [3 /*break*/, 5];
                 stats = (0, bot_1.generateUserStats)(data);
                 return [4 /*yield*/, interaction.reply({
-                        embeds: [(0, stats_1["default"])(stats)],
+                        embeds: [(0, embeds_1.statsEmbed)(stats)],
                         ephemeral: (_b = interaction.options.getBoolean("ephemeral")) !== null && _b !== void 0 ? _b : false
                     })];
-            case 3:
+            case 4:
                 _e.sent();
-                return [3 /*break*/, 6];
-            case 4: return [4 /*yield*/, interaction.reply(constants_1.NOT_PLAYED_TEXT)];
-            case 5:
-                _e.sent();
-                _e.label = 6;
+                return [3 /*break*/, 7];
+            case 5: return [4 /*yield*/, interaction.reply(constants_1.NOT_PLAYED_TEXT)];
             case 6:
-                if (!(commandName === "leaderboard")) return [3 /*break*/, 9];
+                _e.sent();
+                _e.label = 7;
+            case 7:
+                if (!(commandName === "leaderboard")) return [3 /*break*/, 10];
                 option = (_c = interaction.options.getString("sort")) !== null && _c !== void 0 ? _c : "";
                 return [4 /*yield*/, (0, firebase_1.getGuildLeaderboard)(guildId)];
-            case 7:
+            case 8:
                 wordles = _e.sent();
                 leaderboard = (0, bot_1.generateLeaderboard)(wordles, option);
                 return [4 /*yield*/, interaction.reply(leaderboard)];
-            case 8:
-                _e.sent();
-                _e.label = 9;
             case 9:
-                if (!(commandName === "reset-leaderboard")) return [3 /*break*/, 14];
-                if (!hasValidPermissions) return [3 /*break*/, 12];
-                return [4 /*yield*/, (0, firebase_1.resetLeaderboard)(guildId)];
-            case 10:
                 _e.sent();
-                return [4 /*yield*/, interaction.reply("The leaderboard has been reset.")];
+                _e.label = 10;
+            case 10:
+                if (!(commandName === "reset-leaderboard")) return [3 /*break*/, 15];
+                if (!hasValidPermissions) return [3 /*break*/, 13];
+                return [4 /*yield*/, (0, firebase_1.resetLeaderboard)(guildId)];
             case 11:
                 _e.sent();
-                return [3 /*break*/, 14];
-            case 12: return [4 /*yield*/, interaction.reply({
+                return [4 /*yield*/, interaction.reply("The leaderboard has been reset.")];
+            case 12:
+                _e.sent();
+                return [3 /*break*/, 15];
+            case 13: return [4 /*yield*/, interaction.reply({
                     content: constants_1.NO_PERMISSION_TEXT,
                     ephemeral: true
                 })];
-            case 13:
-                _e.sent();
-                _e.label = 14;
             case 14:
-                if (!(commandName === "reset-users")) return [3 /*break*/, 19];
-                if (!hasValidPermissions) return [3 /*break*/, 17];
-                return [4 /*yield*/, (0, firebase_1.resetUsers)(guildId)];
-            case 15:
                 _e.sent();
-                return [4 /*yield*/, interaction.reply("All users have been reset.")];
+                _e.label = 15;
+            case 15:
+                if (!(commandName === "reset-users")) return [3 /*break*/, 20];
+                if (!hasValidPermissions) return [3 /*break*/, 18];
+                return [4 /*yield*/, (0, firebase_1.resetUsers)(guildId)];
             case 16:
                 _e.sent();
-                return [3 /*break*/, 19];
-            case 17: return [4 /*yield*/, interaction.reply({
+                return [4 /*yield*/, interaction.reply("All users have been reset.")];
+            case 17:
+                _e.sent();
+                return [3 /*break*/, 20];
+            case 18: return [4 /*yield*/, interaction.reply({
                     content: constants_1.NO_PERMISSION_TEXT,
                     ephemeral: true
                 })];
-            case 18:
-                _e.sent();
-                _e.label = 19;
             case 19:
-                if (!(commandName === "set-channel")) return [3 /*break*/, 24];
-                if (!(guildId && channelId)) return [3 /*break*/, 22];
-                return [4 /*yield*/, (0, firebase_1.setWordleChannel)(guildId, channelId, guildName)];
-            case 20:
                 _e.sent();
-                return [4 /*yield*/, interaction.reply("Wordle channel set!")];
+                _e.label = 20;
+            case 20:
+                if (!(commandName === "set-channel")) return [3 /*break*/, 25];
+                if (!(guildId && channelId)) return [3 /*break*/, 23];
+                return [4 /*yield*/, (0, firebase_1.setWordleChannel)(guildId, channelId, guildName)];
             case 21:
                 _e.sent();
-                return [3 /*break*/, 24];
-            case 22: return [4 /*yield*/, interaction.reply(constants_1.SOMETHING_WENT_WRONG_TEXT)];
-            case 23:
+                return [4 /*yield*/, interaction.reply("Wordle channel set!")];
+            case 22:
                 _e.sent();
-                _e.label = 24;
+                return [3 /*break*/, 25];
+            case 23: return [4 /*yield*/, interaction.reply(constants_1.SOMETHING_WENT_WRONG_TEXT)];
             case 24:
-                if (!(commandName === "set-admin-role")) return [3 /*break*/, 29];
-                role = interaction.options.getRole("role");
-                if (!(hasValidPermissions && role)) return [3 /*break*/, 27];
-                return [4 /*yield*/, (0, firebase_1.setAdminRole)(guildId, role.id)];
+                _e.sent();
+                _e.label = 25;
             case 25:
+                if (!(commandName === "set-role")) return [3 /*break*/, 30];
+                role = interaction.options.getRole("role");
+                if (!(hasValidPermissions && role)) return [3 /*break*/, 28];
+                return [4 /*yield*/, (0, firebase_1.setAdminRole)(guildId, role.id)];
+            case 26:
                 _e.sent();
                 return [4 /*yield*/, interaction.reply({
                         content: (0, constants_1.SET_WORDLE_ADMIN_ROLE)(role.name),
                         ephemeral: true
                     })];
-            case 26:
+            case 27:
                 _e.sent();
-                return [3 /*break*/, 29];
-            case 27: return [4 /*yield*/, interaction.reply({
+                return [3 /*break*/, 30];
+            case 28: return [4 /*yield*/, interaction.reply({
                     content: constants_1.NO_PERMISSION_TEXT,
                     ephemeral: true
                 })];
-            case 28:
-                _e.sent();
-                _e.label = 29;
             case 29:
-                if (!(commandName === "achievements")) return [3 /*break*/, 34];
-                return [4 /*yield*/, (0, firebase_1.getWordle)(guildId, userId)];
+                _e.sent();
+                _e.label = 30;
             case 30:
+                if (!(commandName === "my-achievements")) return [3 /*break*/, 35];
+                return [4 /*yield*/, (0, firebase_1.getWordle)(guildId, userId)];
+            case 31:
                 data = _e.sent();
-                if (!data) return [3 /*break*/, 32];
+                if (!data) return [3 /*break*/, 33];
                 return [4 /*yield*/, interaction.reply({
-                        embeds: [(0, achievementsList_1["default"])(data)],
+                        embeds: [(0, embeds_1.achievementsListEmbed)(data)],
                         ephemeral: (_d = interaction.options.getBoolean("ephemeral")) !== null && _d !== void 0 ? _d : false
                     })];
-            case 31:
+            case 32:
                 _e.sent();
-                return [3 /*break*/, 34];
-            case 32: return [4 /*yield*/, interaction.reply(constants_1.NOT_PLAYED_TEXT)];
-            case 33:
-                _e.sent();
-                _e.label = 34;
+                return [3 /*break*/, 35];
+            case 33: return [4 /*yield*/, interaction.reply(constants_1.NOT_PLAYED_TEXT)];
             case 34:
-                if (!(commandName === "purge-user")) return [3 /*break*/, 37];
-                member = interaction.options.getUser("user");
-                if (!(hasValidPermissions && member)) return [3 /*break*/, 37];
-                return [4 /*yield*/, (0, firebase_1.purgeUser)(guildId, member.id)];
+                _e.sent();
+                _e.label = 35;
             case 35:
+                if (!(commandName === "purge-user")) return [3 /*break*/, 38];
+                member = interaction.options.getUser("user");
+                if (!(hasValidPermissions && member)) return [3 /*break*/, 38];
+                return [4 /*yield*/, (0, firebase_1.purgeUser)(guildId, member.id)];
+            case 36:
                 _e.sent();
                 return [4 /*yield*/, interaction.reply({
                         content: (0, constants_1.PURGE_USER)(member.username),
                         ephemeral: true
                     })];
-            case 36:
-                _e.sent();
-                _e.label = 37;
             case 37:
-                if (!(commandName === "user-count")) return [3 /*break*/, 42];
-                if (!hasValidPermissions) return [3 /*break*/, 40];
-                return [4 /*yield*/, (0, firebase_1.getUserCount)(guildId)];
+                _e.sent();
+                _e.label = 38;
             case 38:
+                if (!(commandName === "user-count")) return [3 /*break*/, 43];
+                if (!hasValidPermissions) return [3 /*break*/, 41];
+                return [4 /*yield*/, (0, firebase_1.getUserCount)(guildId)];
+            case 39:
                 count = _e.sent();
                 return [4 /*yield*/, interaction.reply({
                         content: (0, constants_1.USER_COUNT)(count),
                         ephemeral: true
                     })];
-            case 39:
+            case 40:
                 _e.sent();
-                return [3 /*break*/, 42];
-            case 40: return [4 /*yield*/, interaction.reply({
+                return [3 /*break*/, 43];
+            case 41: return [4 /*yield*/, interaction.reply({
                     content: constants_1.NO_PERMISSION_TEXT,
                     ephemeral: true
                 })];
-            case 41:
-                _e.sent();
-                _e.label = 42;
             case 42:
-                if (!(commandName === "upgrade-server")) return [3 /*break*/, 46];
-                if (!hasValidPermissions) return [3 /*break*/, 44];
+                _e.sent();
+                _e.label = 43;
+            case 43:
+                if (!(commandName === "upgrade-server")) return [3 /*break*/, 47];
+                if (!hasValidPermissions) return [3 /*break*/, 45];
                 return [4 /*yield*/, interaction.reply({
                         content: (0, constants_1.UPGRADE_SERVER)(guildId),
                         ephemeral: true
                     })];
-            case 43:
+            case 44:
                 _e.sent();
-                return [3 /*break*/, 46];
-            case 44: return [4 /*yield*/, interaction.reply({
+                return [3 /*break*/, 47];
+            case 45: return [4 /*yield*/, interaction.reply({
                     content: constants_1.NO_PERMISSION_TEXT,
                     ephemeral: true
                 })];
-            case 45:
-                _e.sent();
-                _e.label = 46;
             case 46:
-                if (!(commandName === "help")) return [3 /*break*/, 48];
+                _e.sent();
+                _e.label = 47;
+            case 47:
+                if (!(commandName === "help")) return [3 /*break*/, 49];
                 return [4 /*yield*/, interaction.reply({
-                        embeds: [(0, help_1["default"])(hasValidPermissions)],
+                        embeds: [(0, embeds_1.helpEmbed)(hasValidPermissions)],
                         ephemeral: true
                     })];
-            case 47:
+            case 48:
                 _e.sent();
-                _e.label = 48;
-            case 48: return [2 /*return*/];
+                _e.label = 49;
+            case 49: return [3 /*break*/, 52];
+            case 50:
+                error_2 = _e.sent();
+                return [4 /*yield*/, interaction.reply({
+                        content: constants_1.SOMETHING_WENT_WRONG_TEXT,
+                        ephemeral: true
+                    })];
+            case 51:
+                _e.sent();
+                (0, firebase_1.logError)(error_2.message, "interactionCreate");
+                return [3 /*break*/, 52];
+            case 52: return [2 /*return*/];
         }
     });
 }); });
-function main() {
-    return __awaiter(this, void 0, void 0, function () {
-        var commands, err_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    commands = [
-                        commands_1.leaderboardCommand,
-                        commands_1.resetLeaderboardCommand,
-                        commands_1.myStatsCommand,
-                        commands_1.setChannelCommand,
-                        commands_1.myAchievementsCommand,
-                        commands_1.resetUsersCommand,
-                        commands_1.setRoleCommand,
-                        commands_1.purgeUserCommand,
-                        commands_1.userCountCommand,
-                        commands_1.upgradeServerCommand,
-                        commands_1.helpCommand,
-                    ];
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, rest.put(discord_js_1.Routes.applicationCommands(process.env.CLIENT_ID), {
-                            body: commands
-                        })];
-                case 2:
-                    _a.sent();
-                    client.login(process.env.DISCORD_TOKEN);
-                    return [3 /*break*/, 4];
-                case 3:
-                    err_1 = _a.sent();
-                    console.log(err_1);
-                    return [3 /*break*/, 4];
-                case 4: return [2 /*return*/];
-            }
-        });
+(function () { return __awaiter(void 0, void 0, void 0, function () {
+    var error_3;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 2, , 3]);
+                return [4 /*yield*/, rest.put(discord_js_1.Routes.applicationCommands(process.env.CLIENT_ID), {
+                        body: commands_1["default"]
+                    })];
+            case 1:
+                _a.sent();
+                client.login(process.env.DISCORD_TOKEN);
+                return [3 /*break*/, 3];
+            case 2:
+                error_3 = _a.sent();
+                (0, firebase_1.logError)(error_3.message, "applicationCommands");
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
     });
-}
-main();
+}); })();

@@ -36,3 +36,24 @@ export interface DiscordIds {
   guildId: string;
   channelId: string;
 }
+
+// Functions
+
+export interface UpdateUserDataProps {
+  username: string;
+  data: User;
+  completed: string;
+  total: string;
+  wordleNumber: number;
+  guildId: string;
+  id: string;
+}
+
+export interface UpdateLeaderboardDataProps {
+  username: string;
+  data: User;
+  completed: string;
+  total: string;
+  wordleNumber: number;
+  guildId: string;
+}

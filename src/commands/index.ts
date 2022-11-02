@@ -10,7 +10,7 @@ import userCountCommand from "./user-count";
 import upgradeServerCommand from "./upgrade-server";
 import helpCommand from "./help";
 
-export {
+export default [
   leaderboardCommand,
   setChannelCommand,
   myStatsCommand,
@@ -22,4 +22,4 @@ export {
   userCountCommand,
   upgradeServerCommand,
   helpCommand,
-};
+];

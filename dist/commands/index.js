@@ -3,26 +3,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 exports.__esModule = true;
-exports.helpCommand = exports.upgradeServerCommand = exports.userCountCommand = exports.purgeUserCommand = exports.setRoleCommand = exports.resetUsersCommand = exports.resetLeaderboardCommand = exports.myAchievementsCommand = exports.myStatsCommand = exports.setChannelCommand = exports.leaderboardCommand = void 0;
 var leaderboard_1 = __importDefault(require("./leaderboard"));
-exports.leaderboardCommand = leaderboard_1["default"];
 var set_channel_1 = __importDefault(require("./set-channel"));
-exports.setChannelCommand = set_channel_1["default"];
 var my_stats_1 = __importDefault(require("./my-stats"));
-exports.myStatsCommand = my_stats_1["default"];
 var my_achievements_1 = __importDefault(require("./my-achievements"));
-exports.myAchievementsCommand = my_achievements_1["default"];
 var reset_leaderboard_1 = __importDefault(require("./reset-leaderboard"));
-exports.resetLeaderboardCommand = reset_leaderboard_1["default"];
 var reset_users_1 = __importDefault(require("./reset-users"));
-exports.resetUsersCommand = reset_users_1["default"];
 var set_role_1 = __importDefault(require("./set-role"));
-exports.setRoleCommand = set_role_1["default"];
 var purge_user_1 = __importDefault(require("./purge-user"));
-exports.purgeUserCommand = purge_user_1["default"];
 var user_count_1 = __importDefault(require("./user-count"));
-exports.userCountCommand = user_count_1["default"];
 var upgrade_server_1 = __importDefault(require("./upgrade-server"));
-exports.upgradeServerCommand = upgrade_server_1["default"];
 var help_1 = __importDefault(require("./help"));
-exports.helpCommand = help_1["default"];
+exports["default"] = [
+    leaderboard_1["default"],
+    set_channel_1["default"],
+    my_stats_1["default"],
+    my_achievements_1["default"],
+    reset_leaderboard_1["default"],
+    reset_users_1["default"],
+    set_role_1["default"],
+    purge_user_1["default"],
+    user_count_1["default"],
+    upgrade_server_1["default"],
+    help_1["default"],
+];

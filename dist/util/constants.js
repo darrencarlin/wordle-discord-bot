@@ -146,6 +146,16 @@ var POPULATE_USER = function (user) {
     // simple type guard
     var wordlesCompleted = "wordlesCompleted" in user;
     if (wordlesCompleted) {
+        var currAchievements_1 = user.achievements;
+        // loop through achievements constant
+        achievements.forEach(function (element) {
+            // does the user achievements include achievement being looped over?
+            var found = currAchievements_1.find(function (achievement) { return achievement.id === element.id; });
+            // if it doesn't find it we should add it to the user achievements
+            if (!found) {
+                currAchievements_1.push(element);
+            }
+        });
         return {
             userId: user.userId,
             usernames: __spreadArray([], user.usernames, true),
@@ -161,7 +171,7 @@ var POPULATE_USER = function (user) {
             lastGameNumber: user.lastGameNumber,
             bestScore: user.bestScore,
             scores: user.scores,
-            achievements: __spreadArray(__spreadArray([], user.achievements, true), achievements, true)
+            achievements: currAchievements_1
         };
     }
     return __assign(__assign({}, USER), { userId: user.userId, usernames: __spreadArray([], user.usernames, true), achievements: __spreadArray([], achievements, true) });
