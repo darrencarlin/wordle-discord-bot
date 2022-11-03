@@ -28,6 +28,7 @@ export interface User {
   bestScore: number;
   scores: number[];
   achievements: Achievement[];
+  firstWordleDate: number;
 }
 
 // Discord
@@ -56,4 +57,15 @@ export interface UpdateLeaderboardDataProps {
   total: string;
   wordleNumber: number;
   guildId: string;
+}
+
+export interface GuildMessageVariables {
+  guildId: string;
+  channelId: string;
+  id: string;
+  username: string;
+  notificiations: { [key: string]: boolean };
+  isPremium: boolean;
+  premiumExpires: string;
+  serverLimitReached: boolean;
 }

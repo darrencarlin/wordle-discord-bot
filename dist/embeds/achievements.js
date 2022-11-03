@@ -8,7 +8,7 @@ var achievementsEmbed = function (userData, newAchievements) {
     var completedAchievements = (0, bot_1.countCompletedAchievements)(userData);
     var embed = new discord_js_1.EmbedBuilder()
         .setColor(0x0099ff)
-        .setTitle("Achievement".concat(newAchievements.length > 1 ? "s" : "", " Unlocked"));
+        .setTitle("Achievement".concat(newAchievements.length > 1 ? 's' : '', " Unlocked"));
     embed.setDescription("You have unlocked ".concat(completedAchievements, " out of ").concat(userData.achievements.length, " "));
     newAchievements.forEach(function (achievement) {
         embed.addFields({ name: achievement.name, value: achievement.description });

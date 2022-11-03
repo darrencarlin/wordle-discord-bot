@@ -1,25 +1,26 @@
-import { REST } from "@discordjs/rest";
+import { REST } from '@discordjs/rest';
 import {
   Client,
   GatewayIntentBits,
   Interaction,
   Message,
   Routes,
-} from "discord.js";
-import dotenv from "dotenv";
+} from 'discord.js';
+import dotenv from 'dotenv';
 
-import commands from "./commands";
+import commands from './commands';
 
 import {
   achievementsEmbed,
   achievementsListEmbed,
   helpEmbed,
   statsEmbed,
-} from "./embeds";
+} from './embeds';
 
 import {
   COMPLETED_ALREADY_TEXT,
   INVALID_SCORE_TEXT,
+  LIMIT_REACHED,
   NOT_PLAYED_TEXT,
   NO_PERMISSION_TEXT,
   PURGE_USER,
@@ -27,7 +28,7 @@ import {
   SOMETHING_WENT_WRONG_TEXT,
   UPGRADE_SERVER,
   USER_COUNT,
-} from "./util/constants";
+} from './util/constants';
 
 import {
   generateLeaderboard,
@@ -41,11 +42,13 @@ import {
   updateLeaderboardData,
   updateUserData,
   getCommandVariables,
-} from "./util/functions/bot";
+} from './util/functions/bot';
 
 import {
   createGuild,
   deleteGuild,
+  disableNotifications,
+  enableNotifications,
   getGuildLeaderboard,
   getGuildWordleChannel,
   getGuildWordles,
@@ -57,7 +60,7 @@ import {
   resetUsers,
   setAdminRole,
   setWordleChannel,
-} from "./util/functions/firebase";
+} from './util/functions/firebase';
 
 dotenv.config();
 
@@ -69,27 +72,43 @@ const client = new Client({
   ],
 });
 
-const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
+const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);
 
-client.on("ready", () => {
+client.on('ready', () => {
   console.log(`${client?.user?.username} has logged in!`);
 });
 
-client.on("guildCreate", async (guild) => {
+client.on('guildCreate', async (guild) => {
   console.log(`Joined guild ${guild.name}`);
   await createGuild(guild.id, guild.name);
 });
 
-client.on("guildDelete", async (guild) => {
+client.on('guildDelete', async (guild) => {
   console.log(`Left guild ${guild.name}`);
   await deleteGuild(guild.id);
 });
 
-client.on("messageCreate", async (content: Message) => {
+client.on('messageCreate', async (content: Message) => {
   try {
     if (isRegularMessage(content)) return;
 
-    const { guildId, channelId, id, username } = getMessageVariables(content);
+    const {
+      guildId,
+      channelId,
+      id,
+      username,
+      notifications,
+      serverLimitReached,
+    } = await getMessageVariables(content);
+
+    if (serverLimitReached) {
+      if (notifications['limits']) {
+        await content.reply({ content: LIMIT_REACHED });
+        return;
+      }
+      return;
+    }
+
     const isWordleChannel = await getGuildWordleChannel(guildId, channelId);
 
     if (isWordleChannel) {
@@ -100,7 +119,7 @@ client.on("messageCreate", async (content: Message) => {
       const { isValid, score } = isValidWordleScore(content);
 
       if (isValid) {
-        const [completed, total] = score.split("/");
+        const [completed, total] = score.split('/');
 
         // Get the existing user data or create a new one
         const userData = getUserWordleData(wordles, id, username);
@@ -108,13 +127,13 @@ client.on("messageCreate", async (content: Message) => {
         const leaderboardData = getUserLeaderboardData(
           leaderboards,
           id,
-          username
+          username,
         );
 
         // If the user tries to submit the same wordle or an earlier one, return
         if (wordleNumber <= userData.lastGameNumber) {
           await content.reply(
-            COMPLETED_ALREADY_TEXT(userData.lastGameNumber.toString())
+            COMPLETED_ALREADY_TEXT(userData.lastGameNumber.toString()),
           );
           return;
         }
@@ -138,7 +157,7 @@ client.on("messageCreate", async (content: Message) => {
           guildId,
         });
 
-        if (newAchievements.length) {
+        if (newAchievements.length && notifications['achievements'] === true) {
           await content.reply({
             embeds: [achievementsEmbed(newData, newAchievements)],
           });
@@ -149,11 +168,11 @@ client.on("messageCreate", async (content: Message) => {
     }
   } catch (error) {
     await content.reply(SOMETHING_WENT_WRONG_TEXT);
-    logError((error as Error).message, "messageCreate");
+    logError((error as Error).message, 'messageCreate');
   }
 });
 
-client.on("interactionCreate", async (interaction: Interaction) => {
+client.on('interactionCreate', async (interaction: Interaction) => {
   if (interaction.isChatInputCommand()) {
     try {
       const {
@@ -163,63 +182,23 @@ client.on("interactionCreate", async (interaction: Interaction) => {
         guildId,
         channelId,
         guildName,
+        isPremium,
       } = await getCommandVariables(interaction);
 
-      if (commandName === "my-stats") {
-        const data = await getWordle(guildId as string, userId);
-        if (data) {
-          const stats = generateUserStats(data);
-          await interaction.reply({
-            embeds: [statsEmbed(stats)],
-            ephemeral: interaction.options.getBoolean("ephemeral") ?? false,
-          });
-        } else {
-          await interaction.reply(NOT_PLAYED_TEXT);
-        }
-      }
-
-      if (commandName === "leaderboard") {
-        const option = interaction.options.getString("sort") ?? "";
-        const wordles = await getGuildLeaderboard(guildId as string);
-        const leaderboard = generateLeaderboard(wordles, option);
-        await interaction.reply(leaderboard);
-      }
-
-      if (commandName === "reset-leaderboard") {
-        if (hasValidPermissions) {
-          await resetLeaderboard(guildId as string);
-          await interaction.reply("The leaderboard has been reset.");
-        } else {
-          await interaction.reply({
-            content: NO_PERMISSION_TEXT,
-            ephemeral: true,
-          });
-        }
-      }
-
-      if (commandName === "reset-users") {
-        if (hasValidPermissions) {
-          await resetUsers(guildId as string);
-          await interaction.reply("All users have been reset.");
-        } else {
-          await interaction.reply({
-            content: NO_PERMISSION_TEXT,
-            ephemeral: true,
-          });
-        }
-      }
-
-      if (commandName === "set-channel") {
+      if (commandName === 'set-channel') {
         if (guildId && channelId) {
           await setWordleChannel(guildId, channelId, guildName);
-          await interaction.reply("Wordle channel set!");
+          await interaction.reply({
+            content: 'Wordle channel set!',
+            embeds: [helpEmbed(hasValidPermissions)],
+          });
         } else {
           await interaction.reply(SOMETHING_WENT_WRONG_TEXT);
         }
       }
 
-      if (commandName === "set-role") {
-        const role = interaction.options.getRole("role");
+      if (commandName === 'set-role') {
+        const role = interaction.options.getRole('role');
         if (hasValidPermissions && role) {
           await setAdminRole(guildId as string, role.id);
           await interaction.reply({
@@ -234,20 +213,8 @@ client.on("interactionCreate", async (interaction: Interaction) => {
         }
       }
 
-      if (commandName === "my-achievements") {
-        const data = await getWordle(guildId as string, userId);
-        if (data) {
-          await interaction.reply({
-            embeds: [achievementsListEmbed(data)],
-            ephemeral: interaction.options.getBoolean("ephemeral") ?? false,
-          });
-        } else {
-          await interaction.reply(NOT_PLAYED_TEXT);
-        }
-      }
-
-      if (commandName === "purge-user") {
-        const member = interaction.options.getUser("user");
+      if (commandName === 'purge-user') {
+        const member = interaction.options.getUser('user');
 
         if (hasValidPermissions && member) {
           await purgeUser(guildId as string, member.id);
@@ -258,11 +225,36 @@ client.on("interactionCreate", async (interaction: Interaction) => {
         }
       }
 
-      if (commandName === "user-count") {
+      if (commandName === 'reset-users') {
+        if (hasValidPermissions) {
+          await resetUsers(guildId as string);
+          await interaction.reply('All users have been reset.');
+        } else {
+          await interaction.reply({
+            content: NO_PERMISSION_TEXT,
+            ephemeral: true,
+          });
+        }
+      }
+
+      if (commandName === 'reset-leaderboard') {
+        if (hasValidPermissions) {
+          await resetLeaderboard(guildId as string);
+          await interaction.reply('The leaderboard has been reset.');
+        } else {
+          await interaction.reply({
+            content: NO_PERMISSION_TEXT,
+            ephemeral: true,
+          });
+        }
+      }
+
+      if (commandName === 'user-count') {
         if (hasValidPermissions) {
           const count = await getUserCount(guildId as string);
+
           await interaction.reply({
-            content: USER_COUNT(count),
+            content: USER_COUNT(count, isPremium),
             ephemeral: true,
           });
         } else {
@@ -273,7 +265,7 @@ client.on("interactionCreate", async (interaction: Interaction) => {
         }
       }
 
-      if (commandName === "upgrade-server") {
+      if (commandName === 'upgrade-server') {
         if (hasValidPermissions) {
           await interaction.reply({
             content: UPGRADE_SERVER(guildId as string),
@@ -287,7 +279,75 @@ client.on("interactionCreate", async (interaction: Interaction) => {
         }
       }
 
-      if (commandName === "help") {
+      if (commandName === 'enable-notifications') {
+        if (hasValidPermissions) {
+          const option = interaction.options.getString('type') ?? '';
+
+          await enableNotifications(guildId as string, option);
+
+          await interaction.reply({
+            content: `You have enabled ${option} notifications!`,
+            ephemeral: true,
+          });
+        } else {
+          await interaction.reply({
+            content: NO_PERMISSION_TEXT,
+            ephemeral: true,
+          });
+        }
+      }
+
+      if (commandName === 'disable-notifications') {
+        if (hasValidPermissions) {
+          const option = interaction.options.getString('type') ?? '';
+
+          await disableNotifications(guildId as string, option);
+
+          await interaction.reply({
+            content: `You have disabled ${option} notifications!`,
+            ephemeral: true,
+          });
+        } else {
+          await interaction.reply({
+            content: NO_PERMISSION_TEXT,
+            ephemeral: true,
+          });
+        }
+      }
+
+      if (commandName === 'my-stats') {
+        const data = await getWordle(guildId as string, userId);
+        if (data) {
+          const stats = generateUserStats(data);
+          await interaction.reply({
+            embeds: [statsEmbed(stats)],
+            ephemeral: interaction.options.getBoolean('ephemeral') ?? false,
+          });
+        } else {
+          await interaction.reply(NOT_PLAYED_TEXT);
+        }
+      }
+
+      if (commandName === 'my-achievements') {
+        const data = await getWordle(guildId as string, userId);
+        if (data) {
+          await interaction.reply({
+            embeds: [achievementsListEmbed(data)],
+            ephemeral: interaction.options.getBoolean('ephemeral') ?? false,
+          });
+        } else {
+          await interaction.reply(NOT_PLAYED_TEXT);
+        }
+      }
+
+      if (commandName === 'leaderboard') {
+        const option = interaction.options.getString('sort') ?? '';
+        const wordles = await getGuildLeaderboard(guildId as string);
+        const leaderboard = generateLeaderboard(wordles, option);
+        await interaction.reply(leaderboard);
+      }
+
+      if (commandName === 'help') {
         await interaction.reply({
           embeds: [helpEmbed(hasValidPermissions)],
           ephemeral: true,
@@ -298,11 +358,10 @@ client.on("interactionCreate", async (interaction: Interaction) => {
         content: SOMETHING_WENT_WRONG_TEXT,
         ephemeral: true,
       });
-      logError((error as Error).message, "interactionCreate");
+      logError((error as Error).message, 'interactionCreate');
     }
   }
 });
-
 (async () => {
   try {
     await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
@@ -310,6 +369,6 @@ client.on("interactionCreate", async (interaction: Interaction) => {
     });
     client.login(process.env.DISCORD_TOKEN);
   } catch (error) {
-    logError((error as Error).message, "applicationCommands");
+    logError((error as Error).message, 'applicationCommands');
   }
 })();

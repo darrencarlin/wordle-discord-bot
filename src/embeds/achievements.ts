@@ -1,18 +1,18 @@
 // at the top of your file
-import { EmbedBuilder } from "discord.js";
-import { Achievement, User } from "../util/types";
-import { BANNER_IMAGE } from "../util/constants";
-import { countCompletedAchievements } from "../util/functions/bot";
+import { EmbedBuilder } from 'discord.js';
+import { Achievement, User } from '../util/types';
+import { BANNER_IMAGE } from '../util/constants';
+import { countCompletedAchievements } from '../util/functions/bot';
 
 const achievementsEmbed = (userData: User, newAchievements: Achievement[]) => {
   const completedAchievements = countCompletedAchievements(userData);
 
   const embed = new EmbedBuilder()
     .setColor(0x0099ff)
-    .setTitle(`Achievement${newAchievements.length > 1 ? "s" : ""} Unlocked`);
+    .setTitle(`Achievement${newAchievements.length > 1 ? 's' : ''} Unlocked`);
 
   embed.setDescription(
-    `You have unlocked ${completedAchievements} out of ${userData.achievements.length} `
+    `You have unlocked ${completedAchievements} out of ${userData.achievements.length} `,
   );
 
   newAchievements.forEach((achievement) => {

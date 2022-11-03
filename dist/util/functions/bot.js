@@ -51,14 +51,40 @@ exports.updateLeaderboardData = exports.updateUserData = exports.calculateAchiev
 var achievements_1 = require("../achievements");
 var constants_1 = require("../constants");
 var firebase_1 = require("./firebase");
-var getMessageVariables = function (content) {
-    var _a = content, guildId = _a.guildId, channelId = _a.channelId;
-    var _b = content.author, id = _b.id, username = _b.username;
-    return { guildId: guildId, channelId: channelId, id: id, username: username };
-};
+var getMessageVariables = function (content) { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, guildId, channelId, _b, id, username, _c, notifications, isPremium, premiumExpires, users, serverCount, userLimit, premium, newWordleUser, serverLimitReached;
+    return __generator(this, function (_d) {
+        switch (_d.label) {
+            case 0:
+                _a = content, guildId = _a.guildId, channelId = _a.channelId;
+                _b = content.author, id = _b.id, username = _b.username;
+                return [4 /*yield*/, (0, firebase_1.getGuildMetadata)(guildId)];
+            case 1:
+                _c = _d.sent(), notifications = _c.notifications, isPremium = _c.isPremium, premiumExpires = _c.premiumExpires;
+                return [4 /*yield*/, (0, firebase_1.getUsers)(guildId)];
+            case 2:
+                users = _d.sent();
+                return [4 /*yield*/, (0, firebase_1.getUserCount)(guildId)];
+            case 3:
+                serverCount = _d.sent();
+                userLimit = serverCount >= constants_1.SERVER_LIMIT;
+                premium = isPremium || premiumExpires > new Date().getTime();
+                newWordleUser = users.filter(function (user) { return user.userId === id; }).length === 0;
+                serverLimitReached = userLimit && !premium && newWordleUser;
+                return [2 /*return*/, {
+                        guildId: guildId,
+                        channelId: channelId,
+                        id: id,
+                        username: username,
+                        notifications: notifications,
+                        serverLimitReached: serverLimitReached
+                    }];
+        }
+    });
+}); };
 exports.getMessageVariables = getMessageVariables;
 var getCommandVariables = function (interaction) { return __awaiter(void 0, void 0, void 0, function () {
-    var serverOwnerId, commandName, userId, guildId, channelId, guildName, adminRoleId, isAdmin, serverOwner, hasValidPermissions;
+    var serverOwnerId, commandName, userId, guildId, channelId, guildName, isPremium, adminRoleId, isAdmin, serverOwner, hasValidPermissions;
     var _a, _b, _c;
     return __generator(this, function (_d) {
         switch (_d.label) {
@@ -69,8 +95,11 @@ var getCommandVariables = function (interaction) { return __awaiter(void 0, void
                 guildId = interaction.guildId;
                 channelId = interaction.channelId;
                 guildName = (_b = interaction.guild) === null || _b === void 0 ? void 0 : _b.name;
-                return [4 /*yield*/, (0, firebase_1.getAdminRoleId)(guildId !== null && guildId !== void 0 ? guildId : "")];
+                return [4 /*yield*/, (0, firebase_1.getGuildMetadata)(guildId)];
             case 1:
+                isPremium = (_d.sent()).isPremium;
+                return [4 /*yield*/, (0, firebase_1.getAdminRoleId)(guildId !== null && guildId !== void 0 ? guildId : '')];
+            case 2:
                 adminRoleId = _d.sent();
                 isAdmin = ((_c = interaction === null || interaction === void 0 ? void 0 : interaction.member) === null || _c === void 0 ? void 0 : _c.roles).cache.has(adminRoleId);
                 serverOwner = serverOwnerId === userId;
@@ -81,14 +110,15 @@ var getCommandVariables = function (interaction) { return __awaiter(void 0, void
                         userId: userId,
                         guildId: guildId,
                         channelId: channelId,
-                        guildName: guildName
+                        guildName: guildName,
+                        isPremium: isPremium
                     }];
         }
     });
 }); };
 exports.getCommandVariables = getCommandVariables;
 var isRegularMessage = function (content) {
-    return content.author.bot || !content.content.trim().startsWith("Wordle ");
+    return content.author.bot || !content.content.trim().startsWith('Wordle ');
 };
 exports.isRegularMessage = isRegularMessage;
 var getUserWordleData = function (wordles, id, username) {
@@ -109,7 +139,7 @@ var getUserLeaderboardData = function (leaderboards, id, username) {
 };
 exports.getUserLeaderboardData = getUserLeaderboardData;
 var isValidWordleScore = function (content) {
-    var firstLine = content.content.split("\n")[0];
+    var firstLine = content.content.split('\n')[0];
     // Get the score
     var score = firstLine.substring(firstLine.length - 3);
     // Regex to test score
@@ -124,7 +154,7 @@ var sortLeaderboard = function (wordles, option) {
     if (option) {
         var key_1 = option;
         // lower is better
-        var oppositeSortOrder_1 = key_1 === "averageGuesses" || key_1 === "bestScore";
+        var oppositeSortOrder_1 = key_1 === 'averageGuesses' || key_1 === 'bestScore';
         leaderboard = wordles.sort(function (a, b) {
             if (a[key_1] > b[key_1])
                 return oppositeSortOrder_1 ? 1 : -1;
@@ -155,12 +185,12 @@ var sortLeaderboard = function (wordles, option) {
 exports.sortLeaderboard = sortLeaderboard;
 var generateLeaderboard = function (wordles, option) {
     var leaderboard = (0, exports.sortLeaderboard)(wordles, option);
-    var str = "```";
+    var str = '```';
     leaderboard === null || leaderboard === void 0 ? void 0 : leaderboard.forEach(function (user, index) {
         str += "#".concat(index + 1, ". ").concat(user.usernames[0], " - ").concat(user.totalWordles, " games (").concat(user.percentageCompleted, "% completed) / average ").concat(user.averageGuesses, " guesses per game. / current streak: ").concat(user.currentStreak, " / best score: ").concat(user.bestScore, "\n");
     });
-    str += "```";
-    if (str === "``````") {
+    str += '```';
+    if (str === '``````') {
         return constants_1.NO_LEADERBOARD_DATA;
     }
     return str;
@@ -177,12 +207,12 @@ var generateUserStats = function (data) {
     stats.push("".concat(data.lastGameNumber));
     stats.push("".concat(data.scores
         .map(function (score, index) { return "".concat(index + 1, " word gueses x ").concat(score); })
-        .join("\n")));
+        .join('\n')));
     return stats;
 };
 exports.generateUserStats = generateUserStats;
 var getWordleNumber = function (content) {
-    var wordleNumber = content.content.split(" ")[1];
+    var wordleNumber = content.content.split(' ')[1];
     if (wordleNumber) {
         return Number(wordleNumber);
     }
@@ -205,7 +235,7 @@ var calculateUpdatedWordleData = function (completed, total, userData) {
             userData.completionGuesses.length);
     }
     // If the user failed the wordle
-    if (completed === "X") {
+    if (completed === 'X') {
         userData.wordlesFailed++;
         userData.totalWordles++;
     }
@@ -222,8 +252,8 @@ var calculateStreak = function (completed, userData, wordleNumber) {
         userData.longestStreak++;
         return userData;
     }
-    var isStreak = (userData.lastGameNumber + 1 === wordleNumber && completed !== "X") ||
-        completed === "x";
+    var isStreak = (userData.lastGameNumber + 1 === wordleNumber && completed !== 'X') ||
+        completed === 'x';
     if (isStreak) {
         userData.currentStreak++;
         if (userData.currentStreak > userData.longestStreak) {
@@ -242,7 +272,7 @@ var calculateBestScore = function (completed, userData) {
         userData.bestScore = Number(completed);
     }
     // update the scores array
-    if (Number(completed) !== NaN) {
+    if (isNaN(Number(completed))) {
         userData.scores[Number(completed) - 1]++;
     }
     return userData;

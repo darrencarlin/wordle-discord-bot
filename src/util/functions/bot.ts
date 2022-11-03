@@ -3,37 +3,59 @@ import {
   CommandInteraction,
   GuildMemberRoleManager,
   Message,
-} from "discord.js";
-import { achievementChecks } from "../achievements";
-import { NO_LEADERBOARD_DATA, POPULATE_USER } from "../constants";
+} from 'discord.js';
+import { achievementChecks } from '../achievements';
+import { NO_LEADERBOARD_DATA, POPULATE_USER, SERVER_LIMIT } from '../constants';
 import {
   Achievement,
   DiscordIds,
   UpdateLeaderboardDataProps,
   UpdateUserDataProps,
   User,
-} from "../types";
+} from '../types';
 import {
   getAdminRoleId,
+  getGuildMetadata,
+  getUserCount,
+  getUsers,
   updateGuildLeaderboardData,
   updateGuildUserData,
-} from "./firebase";
+} from './firebase';
 
-export const getMessageVariables = (content: Message) => {
+export const getMessageVariables = async (content: Message) => {
   const { guildId, channelId } = content as DiscordIds;
   const { id, username } = content.author;
-  return { guildId, channelId, id, username };
+  const { notifications, isPremium, premiumExpires } = await getGuildMetadata(
+    guildId,
+  );
+  const users = await getUsers(guildId);
+  const serverCount = await getUserCount(guildId);
+  const userLimit = serverCount >= SERVER_LIMIT;
+  const premium = isPremium || premiumExpires > new Date().getTime();
+  const newWordleUser = users.filter((user) => user.userId === id).length === 0;
+  const serverLimitReached = userLimit && !premium && newWordleUser;
+
+  return {
+    guildId,
+    channelId,
+    id,
+    username,
+    notifications,
+    serverLimitReached,
+  };
 };
 
 export const getCommandVariables = async (interaction: CommandInteraction) => {
   const serverOwnerId = interaction.guild?.ownerId;
   const commandName = interaction.commandName;
   const userId = interaction.user.id;
-  const guildId = interaction.guildId;
+  const guildId = interaction.guildId as string;
   const channelId = interaction.channelId;
   const guildName = interaction.guild?.name as string;
 
-  const adminRoleId = await getAdminRoleId(guildId ?? "");
+  const { isPremium } = await getGuildMetadata(guildId);
+
+  const adminRoleId = await getAdminRoleId(guildId ?? '');
   const isAdmin = (
     interaction?.member?.roles as GuildMemberRoleManager
   ).cache.has(adminRoleId);
@@ -49,16 +71,17 @@ export const getCommandVariables = async (interaction: CommandInteraction) => {
     guildId,
     channelId,
     guildName,
+    isPremium,
   };
 };
 
 export const isRegularMessage = (content: Message) =>
-  content.author.bot || !content.content.trim().startsWith("Wordle ");
+  content.author.bot || !content.content.trim().startsWith('Wordle ');
 
 export const getUserWordleData = (
   wordles: User[],
   id: string,
-  username: string
+  username: string,
 ) => {
   const user = wordles.find((user) => user.userId === id);
 
@@ -76,7 +99,7 @@ export const getUserWordleData = (
 export const getUserLeaderboardData = (
   leaderboards: User[],
   id: string,
-  username: string
+  username: string,
 ) => {
   const user = leaderboards.find((user) => user.userId === id);
 
@@ -90,7 +113,7 @@ export const getUserLeaderboardData = (
 };
 
 export const isValidWordleScore = (content: Message) => {
-  const firstLine = content.content.split("\n")[0];
+  const firstLine = content.content.split('\n')[0];
   // Get the score
   const score = firstLine.substring(firstLine.length - 3);
   // Regex to test score
@@ -108,7 +131,7 @@ export const sortLeaderboard = (wordles: User[], option: string) => {
     const key = option as keyof User;
 
     // lower is better
-    const oppositeSortOrder = key === "averageGuesses" || key === "bestScore";
+    const oppositeSortOrder = key === 'averageGuesses' || key === 'bestScore';
 
     leaderboard = wordles.sort((a, b) => {
       if (a[key] > b[key]) return oppositeSortOrder ? 1 : -1;
@@ -137,9 +160,9 @@ export const sortLeaderboard = (wordles: User[], option: string) => {
 };
 
 export const generateLeaderboard = (wordles: User[], option: string) => {
-  let leaderboard = sortLeaderboard(wordles, option);
+  const leaderboard = sortLeaderboard(wordles, option);
 
-  let str = "```";
+  let str = '```';
 
   leaderboard?.forEach((user, index) => {
     str += `#${index + 1}. ${user.usernames[0]} - ${user.totalWordles} games (${
@@ -151,9 +174,9 @@ export const generateLeaderboard = (wordles: User[], option: string) => {
     }\n`;
   });
 
-  str += "```";
+  str += '```';
 
-  if (str === "``````") {
+  if (str === '``````') {
     return NO_LEADERBOARD_DATA;
   }
 
@@ -161,7 +184,7 @@ export const generateLeaderboard = (wordles: User[], option: string) => {
 };
 
 export const generateUserStats = (data: User) => {
-  let stats = [];
+  const stats = [];
 
   stats.push(data.usernames[0]);
   stats.push(`${data.totalWordles}`);
@@ -173,14 +196,14 @@ export const generateUserStats = (data: User) => {
   stats.push(
     `${data.scores
       .map((score, index) => `${index + 1} word gueses x ${score}`)
-      .join("\n")}`
+      .join('\n')}`,
   );
 
   return stats;
 };
 
 export const getWordleNumber = (content: Message) => {
-  const wordleNumber = content.content.split(" ")[1];
+  const wordleNumber = content.content.split(' ')[1];
   if (wordleNumber) {
     return Number(wordleNumber);
   }
@@ -196,7 +219,7 @@ export const checkForNewUsername = (username: string, userData: User) => {
 export const calculateUpdatedWordleData = (
   completed: string,
   total: string,
-  userData: User
+  userData: User,
 ) => {
   // If the user completed the wordle
   if (Number(completed) <= Number(total)) {
@@ -205,21 +228,21 @@ export const calculateUpdatedWordleData = (
     userData.completionGuesses.push(Number(completed));
     userData.averageGuesses = Math.round(
       userData.completionGuesses.reduce((a, b) => a + b) /
-        userData.completionGuesses.length
+        userData.completionGuesses.length,
     );
   }
   // If the user failed the wordle
-  if (completed === "X") {
+  if (completed === 'X') {
     userData.wordlesFailed++;
     userData.totalWordles++;
   }
 
   userData.percentageCompleted = Math.round(
-    (userData.wordlesCompleted / userData.totalWordles) * 100
+    (userData.wordlesCompleted / userData.totalWordles) * 100,
   );
 
   userData.percentageFailed = Math.round(
-    (userData.wordlesFailed / userData.totalWordles) * 100
+    (userData.wordlesFailed / userData.totalWordles) * 100,
   );
 
   return userData;
@@ -228,7 +251,7 @@ export const calculateUpdatedWordleData = (
 export const calculateStreak = (
   completed: string,
   userData: User,
-  wordleNumber: number
+  wordleNumber: number,
 ) => {
   // 0 = first game
   if (userData.lastGameNumber === 0) {
@@ -239,8 +262,8 @@ export const calculateStreak = (
   }
 
   const isStreak =
-    (userData.lastGameNumber + 1 === wordleNumber && completed !== "X") ||
-    completed === "x";
+    (userData.lastGameNumber + 1 === wordleNumber && completed !== 'X') ||
+    completed === 'x';
 
   if (isStreak) {
     userData.currentStreak++;
@@ -264,7 +287,7 @@ export const calculateBestScore = (completed: string, userData: User) => {
   }
 
   // update the scores array
-  if (Number(completed) !== NaN) {
+  if (isNaN(Number(completed))) {
     userData.scores[Number(completed) - 1]++;
   }
 
@@ -273,7 +296,7 @@ export const calculateBestScore = (completed: string, userData: User) => {
 
 export const countCompletedAchievements = (userData: User) => {
   const count = userData.achievements.filter(
-    (achievement: Achievement) => achievement.complete
+    (achievement: Achievement) => achievement.complete,
   ).length;
 
   return count;

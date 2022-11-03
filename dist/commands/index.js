@@ -14,6 +14,8 @@ var purge_user_1 = __importDefault(require("./purge-user"));
 var user_count_1 = __importDefault(require("./user-count"));
 var upgrade_server_1 = __importDefault(require("./upgrade-server"));
 var help_1 = __importDefault(require("./help"));
+var enable_notifications_1 = __importDefault(require("./enable-notifications"));
+var disable_notifications_1 = __importDefault(require("./disable-notifications"));
 exports["default"] = [
     leaderboard_1["default"],
     set_channel_1["default"],
@@ -26,4 +28,6 @@ exports["default"] = [
     user_count_1["default"],
     upgrade_server_1["default"],
     help_1["default"],
+    enable_notifications_1["default"],
+    disable_notifications_1["default"],
 ];

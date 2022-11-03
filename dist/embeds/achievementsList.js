@@ -8,11 +8,11 @@ var achievementsListEmbed = function (userData) {
     var count = userData.achievements.length;
     var embed = new discord_js_1.EmbedBuilder()
         .setColor(0x0099ff)
-        .setTitle("Achievement".concat(count > 1 ? "s" : "", " Unlocked"));
+        .setTitle("Achievement".concat(count > 1 ? 's' : '', " Unlocked"));
     embed.setDescription("You have unlocked ".concat(completedAchievements, " out of ").concat(count, " achievements"));
     userData.achievements.forEach(function (achievement, index) {
         embed.addFields({
-            name: "".concat(index + 1, ". ").concat(achievement.name, " ").concat(achievement.complete ? "✅" : "❌"),
+            name: "".concat(index + 1, ". ").concat(achievement.name, " ").concat(achievement.complete ? '✅' : '❌'),
             value: achievement.description
         });
     });

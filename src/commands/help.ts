@@ -1,7 +1,7 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
+import { SlashCommandBuilder } from '@discordjs/builders';
 
 const helpCommand = new SlashCommandBuilder()
-  .setName("help")
+  .setName('help')
   .setDescription("Shows the server's commands");
 
 export default helpCommand.toJSON();
