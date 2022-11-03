@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 
-const userCountCommand = new SlashCommandBuilder()
-  .setName('user-count')
-  .setDescription('Shows the number of users participating in wordles');
+const serverStatusCommand = new SlashCommandBuilder()
+  .setName('server-status')
+  .setDescription('Shows the server status');
 
-export default userCountCommand.toJSON();
+export default serverStatusCommand.toJSON();

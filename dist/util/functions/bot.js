@@ -84,24 +84,24 @@ var getMessageVariables = function (content) { return __awaiter(void 0, void 0, 
 }); };
 exports.getMessageVariables = getMessageVariables;
 var getCommandVariables = function (interaction) { return __awaiter(void 0, void 0, void 0, function () {
-    var serverOwnerId, commandName, userId, guildId, channelId, guildName, isPremium, adminRoleId, isAdmin, serverOwner, hasValidPermissions;
-    var _a, _b, _c;
-    return __generator(this, function (_d) {
-        switch (_d.label) {
+    var serverOwnerId, commandName, userId, guildId, channelId, guildName, _a, isPremium, premiumExpires, adminRoleId, isAdmin, serverOwner, hasValidPermissions;
+    var _b, _c, _d;
+    return __generator(this, function (_e) {
+        switch (_e.label) {
             case 0:
-                serverOwnerId = (_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.ownerId;
+                serverOwnerId = (_b = interaction.guild) === null || _b === void 0 ? void 0 : _b.ownerId;
                 commandName = interaction.commandName;
                 userId = interaction.user.id;
                 guildId = interaction.guildId;
                 channelId = interaction.channelId;
-                guildName = (_b = interaction.guild) === null || _b === void 0 ? void 0 : _b.name;
+                guildName = (_c = interaction.guild) === null || _c === void 0 ? void 0 : _c.name;
                 return [4 /*yield*/, (0, firebase_1.getGuildMetadata)(guildId)];
             case 1:
-                isPremium = (_d.sent()).isPremium;
+                _a = _e.sent(), isPremium = _a.isPremium, premiumExpires = _a.premiumExpires;
                 return [4 /*yield*/, (0, firebase_1.getAdminRoleId)(guildId !== null && guildId !== void 0 ? guildId : '')];
             case 2:
-                adminRoleId = _d.sent();
-                isAdmin = ((_c = interaction === null || interaction === void 0 ? void 0 : interaction.member) === null || _c === void 0 ? void 0 : _c.roles).cache.has(adminRoleId);
+                adminRoleId = _e.sent();
+                isAdmin = ((_d = interaction === null || interaction === void 0 ? void 0 : interaction.member) === null || _d === void 0 ? void 0 : _d.roles).cache.has(adminRoleId);
                 serverOwner = serverOwnerId === userId;
                 hasValidPermissions = isAdmin || serverOwner;
                 return [2 /*return*/, {
@@ -111,7 +111,8 @@ var getCommandVariables = function (interaction) { return __awaiter(void 0, void
                         guildId: guildId,
                         channelId: channelId,
                         guildName: guildName,
-                        isPremium: isPremium
+                        isPremium: isPremium,
+                        premiumExpires: premiumExpires
                     }];
         }
     });

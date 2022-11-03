@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 exports.__esModule = true;
-exports.statsEmbed = exports.helpEmbed = exports.achievementsListEmbed = exports.achievementsEmbed = void 0;
+exports.serverStatusEmbed = exports.statsEmbed = exports.helpEmbed = exports.achievementsListEmbed = exports.achievementsEmbed = void 0;
 var achievements_1 = __importDefault(require("./achievements"));
 exports.achievementsEmbed = achievements_1["default"];
 var achievementsList_1 = __importDefault(require("./achievementsList"));
@@ -12,3 +12,5 @@ var help_1 = __importDefault(require("./help"));
 exports.helpEmbed = help_1["default"];
 var stats_1 = __importDefault(require("./stats"));
 exports.statsEmbed = stats_1["default"];
+var serverStatus_1 = __importDefault(require("./serverStatus"));
+exports.serverStatusEmbed = serverStatus_1["default"];

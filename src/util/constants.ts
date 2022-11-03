@@ -189,14 +189,6 @@ export const SET_WORDLE_ADMIN_ROLE = (role: string) => {
   return `You have set the wordle admin role to **${role}**`;
 };
 
-export const USER_COUNT = (count: number, isPremium: boolean) => {
-  return `There are currently **${count}** users in your database. ${
-    isPremium
-      ? 'Your limit is **unlimited**.'
-      : `The limit for non-premium servers is **${SERVER_LIMIT}**. Consider upgrading to premium to allow more users.`
-  }`;
-};
-
 export const PURGE_USER = (user: string) =>
   `You have purged **${user}** from the database`;
 

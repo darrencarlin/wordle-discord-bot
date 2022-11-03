@@ -169,7 +169,7 @@ client.on('messageCreate', function (content) { return __awaiter(void 0, void 0,
     });
 }); });
 client.on('interactionCreate', function (interaction) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, hasValidPermissions, commandName, userId, guildId, channelId, guildName, isPremium, role, member, count, option, option, data, stats, data, option, wordles, leaderboard, error_2;
+    var _a, hasValidPermissions, commandName, userId, guildId, channelId, guildName, isPremium, premiumExpires, role, member, count, option, option, data, stats, data, option, wordles, leaderboard, error_2;
     var _b, _c, _d, _e, _f;
     return __generator(this, function (_g) {
         switch (_g.label) {
@@ -180,7 +180,7 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
                 _g.trys.push([1, 60, , 62]);
                 return [4 /*yield*/, (0, bot_1.getCommandVariables)(interaction)];
             case 2:
-                _a = _g.sent(), hasValidPermissions = _a.hasValidPermissions, commandName = _a.commandName, userId = _a.userId, guildId = _a.guildId, channelId = _a.channelId, guildName = _a.guildName, isPremium = _a.isPremium;
+                _a = _g.sent(), hasValidPermissions = _a.hasValidPermissions, commandName = _a.commandName, userId = _a.userId, guildId = _a.guildId, channelId = _a.channelId, guildName = _a.guildName, isPremium = _a.isPremium, premiumExpires = _a.premiumExpires;
                 if (!(commandName === 'set-channel')) return [3 /*break*/, 7];
                 if (!(guildId && channelId)) return [3 /*break*/, 5];
                 return [4 /*yield*/, (0, firebase_1.setWordleChannel)(guildId, channelId, guildName)];
@@ -267,13 +267,13 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
                 _g.sent();
                 _g.label = 25;
             case 25:
-                if (!(commandName === 'user-count')) return [3 /*break*/, 30];
+                if (!(commandName === 'server-status')) return [3 /*break*/, 30];
                 if (!hasValidPermissions) return [3 /*break*/, 28];
                 return [4 /*yield*/, (0, firebase_1.getUserCount)(guildId)];
             case 26:
                 count = _g.sent();
                 return [4 /*yield*/, interaction.reply({
-                        content: (0, constants_1.USER_COUNT)(count, isPremium),
+                        embeds: [(0, embeds_1.serverStatusEmbed)(count, isPremium, premiumExpires)],
                         ephemeral: true
                     })];
             case 27:

@@ -14,6 +14,7 @@ import {
   achievementsEmbed,
   achievementsListEmbed,
   helpEmbed,
+  serverStatusEmbed,
   statsEmbed,
 } from './embeds';
 
@@ -27,7 +28,6 @@ import {
   SET_WORDLE_ADMIN_ROLE,
   SOMETHING_WENT_WRONG_TEXT,
   UPGRADE_SERVER,
-  USER_COUNT,
 } from './util/constants';
 
 import {
@@ -183,6 +183,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         channelId,
         guildName,
         isPremium,
+        premiumExpires,
       } = await getCommandVariables(interaction);
 
       if (commandName === 'set-channel') {
@@ -249,12 +250,12 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         }
       }
 
-      if (commandName === 'user-count') {
+      if (commandName === 'server-status') {
         if (hasValidPermissions) {
           const count = await getUserCount(guildId as string);
 
           await interaction.reply({
-            content: USER_COUNT(count, isPremium),
+            embeds: [serverStatusEmbed(count, isPremium, premiumExpires)],
             ephemeral: true,
           });
         } else {

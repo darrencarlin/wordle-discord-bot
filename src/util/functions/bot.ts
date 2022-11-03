@@ -53,7 +53,7 @@ export const getCommandVariables = async (interaction: CommandInteraction) => {
   const channelId = interaction.channelId;
   const guildName = interaction.guild?.name as string;
 
-  const { isPremium } = await getGuildMetadata(guildId);
+  const { isPremium, premiumExpires } = await getGuildMetadata(guildId);
 
   const adminRoleId = await getAdminRoleId(guildId ?? '');
   const isAdmin = (
@@ -72,6 +72,7 @@ export const getCommandVariables = async (interaction: CommandInteraction) => {
     channelId,
     guildName,
     isPremium,
+    premiumExpires,
   };
 };
 

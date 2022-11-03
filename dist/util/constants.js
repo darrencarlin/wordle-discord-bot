@@ -20,7 +20,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 exports.__esModule = true;
-exports.COMMANDS = exports.NO_PERMISSION_TEXT = exports.NO_LEADERBOARD_DATA = exports.THUMBNAIL_IMAGE = exports.BANNER_IMAGE = exports.SOMETHING_WENT_WRONG_TEXT = exports.NOT_PLAYED_TEXT = exports.INVALID_SCORE_TEXT = exports.COMPLETED_ALREADY_TEXT = exports.PURGE_USER = exports.USER_COUNT = exports.SET_WORDLE_ADMIN_ROLE = exports.UPGRADE_SERVER = exports.LIMIT_REACHED = exports.DEFAULT_NOTIFICATIONS = exports.SERVER_LIMIT = exports.POPULATE_USER = void 0;
+exports.COMMANDS = exports.NO_PERMISSION_TEXT = exports.NO_LEADERBOARD_DATA = exports.THUMBNAIL_IMAGE = exports.BANNER_IMAGE = exports.SOMETHING_WENT_WRONG_TEXT = exports.NOT_PLAYED_TEXT = exports.INVALID_SCORE_TEXT = exports.COMPLETED_ALREADY_TEXT = exports.PURGE_USER = exports.SET_WORDLE_ADMIN_ROLE = exports.UPGRADE_SERVER = exports.LIMIT_REACHED = exports.DEFAULT_NOTIFICATIONS = exports.SERVER_LIMIT = exports.POPULATE_USER = void 0;
 var POPULATE_USER = function (user) {
     var achievements = [
         {
@@ -195,12 +195,6 @@ var SET_WORDLE_ADMIN_ROLE = function (role) {
     return "You have set the wordle admin role to **".concat(role, "**");
 };
 exports.SET_WORDLE_ADMIN_ROLE = SET_WORDLE_ADMIN_ROLE;
-var USER_COUNT = function (count, isPremium) {
-    return "There are currently **".concat(count, "** users in your database. ").concat(isPremium
-        ? 'Your limit is **unlimited**'
-        : "The limit for non-premium servers is **".concat(exports.SERVER_LIMIT, "**. Consider upgrading to premium to allow more users."));
-};
-exports.USER_COUNT = USER_COUNT;
 var PURGE_USER = function (user) {
     return "You have purged **".concat(user, "** from the database");
 };
