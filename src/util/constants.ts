@@ -160,7 +160,8 @@ export const POPULATE_USER = (user: User | NewUser): User => {
       bestScore: user.bestScore,
       scores: user.scores,
       achievements: currAchievements,
-      firstWordleDate: user.firstWordleDate,
+      // potentially remove the ?? when everyone has a firstWordleDate
+      firstWordleDate: user.firstWordleDate ?? new Date().getTime(),
     };
   }
   return {
