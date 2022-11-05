@@ -31,6 +31,20 @@ export interface User {
   firstWordleDate: number;
 }
 
+export interface Notifications {
+  achievements: boolean;
+  limits: boolean;
+}
+export interface GuildMetadata {
+  adminRoleId: string;
+  channelId: string;
+  guildId: string;
+  isPremium: boolean;
+  name: string;
+  notifications: Notifications;
+  premiumExpires: number;
+  count?: number;
+}
 // Discord
 
 export interface DiscordIds {

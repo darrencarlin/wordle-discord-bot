@@ -1,4 +1,4 @@
-import { countCompletedAchievements } from './functions/bot';
+import { countCompletedAchievements } from './botFunctions';
 import { User } from './types';
 
 // both of these arrays need to be the same length and have the correct

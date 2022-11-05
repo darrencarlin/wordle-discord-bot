@@ -47,8 +47,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.getAdminRoleId = exports.logError = exports.getWordle = exports.disableNotifications = exports.enableNotifications = exports.getGuildNotifications = exports.getUsers = exports.getUserCount = exports.purgeUser = exports.getAdminRole = exports.setAdminRole = exports.resetUsers = exports.resetLeaderboard = exports.updateGuildLeaderboardData = exports.updateGuildUserData = exports.getGuildLeaderboard = exports.getGuildWordles = exports.getGuildWordleChannel = exports.setWordleChannel = exports.deleteGuild = exports.createGuild = exports.getGuildData = void 0;
-var firebaseAdmin_1 = require("../firebaseAdmin");
+exports.getAdminRoleId = exports.logError = exports.getWordle = exports.disableNotifications = exports.enableNotifications = exports.getGuildNotifications = exports.getUserCount = exports.purgeUser = exports.getAdminRole = exports.setAdminRole = exports.resetUsers = exports.resetLeaderboard = exports.updateGuildLeaderboardData = exports.updateGuildUserData = exports.getGuildLeaderboard = exports.getGuildWordles = exports.getGuildWordleChannel = exports.setWordleChannel = exports.deleteGuild = exports.createGuild = exports.getGuildData = void 0;
+var firebaseAdmin_1 = require("./firebaseAdmin");
 var constants_1 = require("../constants");
 // potentially add an option to choose what you need... minimzing calls to db
 var getGuildData = function (id) { return __awaiter(void 0, void 0, void 0, function () {
@@ -277,16 +277,6 @@ var purgeUser = function (id, userId) { return __awaiter(void 0, void 0, void 0,
     });
 }); };
 exports.purgeUser = purgeUser;
-// This could probably be done better or is already being done elsewhere
-// export const getGuildMetadata = async (id: string) => {
-//   const guild = await db.collection('guilds').doc(id).get();
-//   return {
-//     adminRoleId: guild.data()?.adminRoleId,
-//     notifications: guild.data()?.notifications ?? DEFAULT_NOTIFICATIONS,
-//     isPremium: guild.data()?.isPremium ?? false,
-//     premiumExpires: guild.data()?.premiumExpires ?? new Date().getTime(),
-//   };
-// };
 var getUserCount = function (id) { return __awaiter(void 0, void 0, void 0, function () {
     var users;
     return __generator(this, function (_a) {
@@ -299,19 +289,6 @@ var getUserCount = function (id) { return __awaiter(void 0, void 0, void 0, func
     });
 }); };
 exports.getUserCount = getUserCount;
-// This could probably be done better or is already being done elsewhere
-var getUsers = function (id) { return __awaiter(void 0, void 0, void 0, function () {
-    var users;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, firebaseAdmin_1.db.collection("guilds/".concat(id, "/users")).get()];
-            case 1:
-                users = _a.sent();
-                return [2 /*return*/, users.docs.map(function (doc) { return doc.data(); })];
-        }
-    });
-}); };
-exports.getUsers = getUsers;
 var getGuildNotifications = function (id) { return __awaiter(void 0, void 0, void 0, function () {
     var guild;
     var _a;

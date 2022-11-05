@@ -2,9 +2,9 @@
 exports.__esModule = true;
 var discord_js_1 = require("discord.js");
 var constants_1 = require("../util/constants");
-var bot_1 = require("../util/functions/bot");
+var botFunctions_1 = require("../util/botFunctions");
 var achievementsListEmbed = function (userData) {
-    var completedAchievements = (0, bot_1.countCompletedAchievements)(userData);
+    var completedAchievements = (0, botFunctions_1.countCompletedAchievements)(userData);
     var count = userData.achievements.length;
     var embed = new discord_js_1.EmbedBuilder()
         .setColor(0x0099ff)

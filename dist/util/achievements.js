@@ -1,7 +1,7 @@
 "use strict";
 exports.__esModule = true;
 exports.achievementChecks = void 0;
-var bot_1 = require("./functions/bot");
+var botFunctions_1 = require("./botFunctions");
 // both of these arrays need to be the same length and have the correct
 // corresponding achievement check
 exports.achievementChecks = [
@@ -153,7 +153,7 @@ exports.achievementChecks = [
     },
     {
         check: function (userData) {
-            var completedAchievements = (0, bot_1.countCompletedAchievements)(userData);
+            var completedAchievements = (0, botFunctions_1.countCompletedAchievements)(userData);
             var totalAchievements = userData.achievements.length;
             if (completedAchievements === totalAchievements - 1 &&
                 userData.achievements.find(function (achievement) { return achievement.id === 17 && !achievement.complete; })) {

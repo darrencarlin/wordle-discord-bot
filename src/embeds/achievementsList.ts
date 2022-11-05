@@ -1,6 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import { BANNER_IMAGE } from '../util/constants';
-import { countCompletedAchievements } from '../util/functions/bot';
+import { countCompletedAchievements } from '../util/botFunctions';
 import { User } from '../util/types';
 
 const achievementsListEmbed = (userData: User) => {

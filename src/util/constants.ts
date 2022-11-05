@@ -179,6 +179,9 @@ export const DEFAULT_NOTIFICATIONS = {
   limits: true,
 };
 
+export const EXPORT_DATA_TEXT = (id: string) =>
+  `Follow this [link](https://wordlediscordbot.com/export/${id}) to get your servers current data in JSON format`;
+
 export const LIMIT_REACHED =
   "You've reached the limit for this server. Delete some users to allow more or consider upgrading to premium.";
 
@@ -240,8 +243,8 @@ export const COMMANDS = [
     permissions: 'admin',
   },
   {
-    name: 'User Count ```/user-count```',
-    description: 'Shows the number of users currently in the database',
+    name: 'User Count ```/server-status```',
+    description: 'Shows the current status of the server',
     permissions: 'admin',
   },
   {

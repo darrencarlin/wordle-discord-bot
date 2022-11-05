@@ -48,9 +48,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 exports.updateLeaderboardData = exports.updateUserData = exports.calculateAchievements = exports.countCompletedAchievements = exports.calculateBestScore = exports.calculateStreak = exports.calculateUpdatedWordleData = exports.checkForNewUsername = exports.getWordleNumber = exports.generateUserStats = exports.generateLeaderboard = exports.sortLeaderboard = exports.isValidWordleScore = exports.getUserLeaderboardData = exports.getUserWordleData = exports.isRegularMessage = exports.getInteractionCreateVariables = exports.getMessageCreateVariables = void 0;
-var achievements_1 = require("../achievements");
-var constants_1 = require("../constants");
-var firebase_1 = require("./firebase");
+var achievements_1 = require("./achievements");
+var constants_1 = require("./constants");
+var firebaseQueries_1 = require("./firebase/firebaseQueries");
 var getMessageCreateVariables = function (content) { return __awaiter(void 0, void 0, void 0, function () {
     var _a, guildId, channelId, _b, id, username, _c, notifications, isPremium, premiumExpires, users, serverCount, userLimit, premium, newWordleUser, serverLimitReached, data;
     return __generator(this, function (_d) {
@@ -58,7 +58,7 @@ var getMessageCreateVariables = function (content) { return __awaiter(void 0, vo
             case 0:
                 _a = content, guildId = _a.guildId, channelId = _a.channelId;
                 _b = content.author, id = _b.id, username = _b.username;
-                return [4 /*yield*/, (0, firebase_1.getGuildData)(guildId)];
+                return [4 /*yield*/, (0, firebaseQueries_1.getGuildData)(guildId)];
             case 1:
                 _c = _d.sent(), notifications = _c.notifications, isPremium = _c.isPremium, premiumExpires = _c.premiumExpires, users = _c.users, serverCount = _c.serverCount;
                 userLimit = serverCount >= constants_1.SERVER_LIMIT;
@@ -90,10 +90,10 @@ var getInteractionCreateVariables = function (interaction) { return __awaiter(vo
                 guildId = interaction.guildId;
                 channelId = interaction.channelId;
                 guildName = (_c = interaction.guild) === null || _c === void 0 ? void 0 : _c.name;
-                return [4 /*yield*/, (0, firebase_1.getGuildData)(guildId)];
+                return [4 /*yield*/, (0, firebaseQueries_1.getGuildData)(guildId)];
             case 1:
                 _a = _e.sent(), isPremium = _a.isPremium, premiumExpires = _a.premiumExpires;
-                return [4 /*yield*/, (0, firebase_1.getAdminRoleId)(guildId !== null && guildId !== void 0 ? guildId : '')];
+                return [4 /*yield*/, (0, firebaseQueries_1.getAdminRoleId)(guildId !== null && guildId !== void 0 ? guildId : '')];
             case 2:
                 adminRoleId = _e.sent();
                 isAdmin = ((_d = interaction === null || interaction === void 0 ? void 0 : interaction.member) === null || _d === void 0 ? void 0 : _d.roles).cache.has(adminRoleId);
@@ -306,7 +306,7 @@ var updateUserData = function (_a) {
                     data = (0, exports.calculateStreak)(completed, data, wordleNumber);
                     data = (0, exports.calculateBestScore)(completed, data);
                     _b = (0, exports.calculateAchievements)(data), userData = _b.userData, newAchievements = _b.newAchievements;
-                    return [4 /*yield*/, (0, firebase_1.updateGuildUserData)(guildId, id, userData)];
+                    return [4 /*yield*/, (0, firebaseQueries_1.updateGuildUserData)(guildId, id, userData)];
                 case 1:
                     _c.sent();
                     return [2 /*return*/, { userData: userData, newAchievements: newAchievements }];
@@ -325,7 +325,7 @@ var updateLeaderboardData = function (_a) {
                     data = (0, exports.calculateUpdatedWordleData)(completed, total, data);
                     data = (0, exports.calculateStreak)(completed, data, wordleNumber);
                     data = (0, exports.calculateBestScore)(completed, data);
-                    return [4 /*yield*/, (0, firebase_1.updateGuildLeaderboardData)(guildId, data)];
+                    return [4 /*yield*/, (0, firebaseQueries_1.updateGuildLeaderboardData)(guildId, data)];
                 case 1:
                     _b.sent();
                     return [2 /*return*/];

@@ -20,8 +20,9 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 exports.__esModule = true;
-exports.COMMANDS = exports.NO_PERMISSION_TEXT = exports.NO_LEADERBOARD_DATA = exports.THUMBNAIL_IMAGE = exports.BANNER_IMAGE = exports.SOMETHING_WENT_WRONG_TEXT = exports.NOT_PLAYED_TEXT = exports.INVALID_SCORE_TEXT = exports.COMPLETED_ALREADY_TEXT = exports.PURGE_USER = exports.SET_WORDLE_ADMIN_ROLE = exports.UPGRADE_SERVER = exports.LIMIT_REACHED = exports.DEFAULT_NOTIFICATIONS = exports.SERVER_LIMIT = exports.POPULATE_USER = void 0;
+exports.COMMANDS = exports.NO_PERMISSION_TEXT = exports.NO_LEADERBOARD_DATA = exports.THUMBNAIL_IMAGE = exports.BANNER_IMAGE = exports.SOMETHING_WENT_WRONG_TEXT = exports.NOT_PLAYED_TEXT = exports.INVALID_SCORE_TEXT = exports.COMPLETED_ALREADY_TEXT = exports.PURGE_USER = exports.SET_WORDLE_ADMIN_ROLE = exports.UPGRADE_SERVER = exports.LIMIT_REACHED = exports.EXPORT_DATA_TEXT = exports.DEFAULT_NOTIFICATIONS = exports.SERVER_LIMIT = exports.POPULATE_USER = void 0;
 var POPULATE_USER = function (user) {
+    var _a;
     var achievements = [
         {
             id: 1,
@@ -173,7 +174,8 @@ var POPULATE_USER = function (user) {
             bestScore: user.bestScore,
             scores: user.scores,
             achievements: currAchievements_1,
-            firstWordleDate: user.firstWordleDate
+            // potentially remove the ?? when everyone has a firstWordleDate
+            firstWordleDate: (_a = user.firstWordleDate) !== null && _a !== void 0 ? _a : new Date().getTime()
         };
     }
     return __assign(__assign({}, USER), { userId: user.userId, usernames: __spreadArray([], user.usernames, true), achievements: __spreadArray([], achievements, true) });
@@ -184,6 +186,10 @@ exports.DEFAULT_NOTIFICATIONS = {
     achievements: true,
     limits: true
 };
+var EXPORT_DATA_TEXT = function (id) {
+    return "Follow this [link](https://wordlediscordbot.com/export/".concat(id, ") to get your servers current data in JSON format");
+};
+exports.EXPORT_DATA_TEXT = EXPORT_DATA_TEXT;
 exports.LIMIT_REACHED = "You've reached the limit for this server. Delete some users to allow more or consider upgrading to premium.";
 var UPGRADE_SERVER = function (id) {
     return "Click [here](https://wordlediscordbot.com/upgrade/".concat(id, ") to upgrade your server to allow more users.");
@@ -237,8 +243,8 @@ exports.COMMANDS = [
         permissions: 'admin'
     },
     {
-        name: 'User Count ```/user-count```',
-        description: 'Shows the number of users currently in the database',
+        name: 'User Count ```/server-status```',
+        description: 'Shows the current status of the server',
         permissions: 'admin'
     },
     {

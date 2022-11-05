@@ -7,9 +7,7 @@ import {
   Routes,
 } from 'discord.js';
 import dotenv from 'dotenv';
-
 import commands from './commands';
-
 import {
   achievementsEmbed,
   achievementsListEmbed,
@@ -20,6 +18,7 @@ import {
 
 import {
   COMPLETED_ALREADY_TEXT,
+  EXPORT_DATA_TEXT,
   INVALID_SCORE_TEXT,
   LIMIT_REACHED,
   NOT_PLAYED_TEXT,
@@ -29,21 +28,19 @@ import {
   SOMETHING_WENT_WRONG_TEXT,
   UPGRADE_SERVER,
 } from './util/constants';
-
 import {
   generateLeaderboard,
   generateUserStats,
   getUserLeaderboardData,
   getUserWordleData,
-  getMessageVariables,
+  getMessageCreateVariables,
   getWordleNumber,
   isRegularMessage,
   isValidWordleScore,
   updateLeaderboardData,
   updateUserData,
-  getCommandVariables,
-} from './util/functions/bot';
-
+  getInteractionCreateVariables,
+} from './util/botFunctions';
 import {
   createGuild,
   deleteGuild,
@@ -60,7 +57,7 @@ import {
   resetUsers,
   setAdminRole,
   setWordleChannel,
-} from './util/functions/firebase';
+} from './util/firebase/firebaseQueries';
 
 dotenv.config();
 
@@ -89,9 +86,9 @@ client.on('guildDelete', async (guild) => {
 });
 
 client.on('messageCreate', async (content: Message) => {
-  try {
-    if (isRegularMessage(content)) return;
+  if (isRegularMessage(content)) return;
 
+  try {
     const {
       guildId,
       channelId,
@@ -99,7 +96,7 @@ client.on('messageCreate', async (content: Message) => {
       username,
       notifications,
       serverLimitReached,
-    } = await getMessageVariables(content);
+    } = await getMessageCreateVariables(content);
 
     if (serverLimitReached) {
       if (notifications['limits']) {
@@ -173,194 +170,210 @@ client.on('messageCreate', async (content: Message) => {
 });
 
 client.on('interactionCreate', async (interaction: Interaction) => {
-  if (interaction.isChatInputCommand()) {
-    try {
-      const {
-        hasValidPermissions,
-        commandName,
-        userId,
-        guildId,
-        channelId,
-        guildName,
-        isPremium,
-        premiumExpires,
-      } = await getCommandVariables(interaction);
+  const command = interaction.isChatInputCommand();
 
-      if (commandName === 'set-channel') {
-        if (guildId && channelId) {
-          await setWordleChannel(guildId, channelId, guildName);
-          await interaction.reply({
-            content: 'Wordle channel set!',
-            embeds: [helpEmbed(hasValidPermissions)],
-          });
-        } else {
-          await interaction.reply(SOMETHING_WENT_WRONG_TEXT);
-        }
-      }
+  if (!command) return;
 
-      if (commandName === 'set-role') {
-        const role = interaction.options.getRole('role');
-        if (hasValidPermissions && role) {
-          await setAdminRole(guildId as string, role.id);
-          await interaction.reply({
-            content: SET_WORDLE_ADMIN_ROLE(role.name),
-            ephemeral: true,
-          });
-        } else {
-          await interaction.reply({
-            content: NO_PERMISSION_TEXT,
-            ephemeral: true,
-          });
-        }
-      }
+  try {
+    const {
+      hasValidPermissions,
+      commandName,
+      userId,
+      guildId,
+      channelId,
+      guildName,
+      isPremium,
+      premiumExpires,
+    } = await getInteractionCreateVariables(interaction);
 
-      if (commandName === 'purge-user') {
-        const member = interaction.options.getUser('user');
-
-        if (hasValidPermissions && member) {
-          await purgeUser(guildId as string, member.id);
-          await interaction.reply({
-            content: PURGE_USER(member.username),
-            ephemeral: true,
-          });
-        }
-      }
-
-      if (commandName === 'reset-users') {
-        if (hasValidPermissions) {
-          await resetUsers(guildId as string);
-          await interaction.reply('All users have been reset.');
-        } else {
-          await interaction.reply({
-            content: NO_PERMISSION_TEXT,
-            ephemeral: true,
-          });
-        }
-      }
-
-      if (commandName === 'reset-leaderboard') {
-        if (hasValidPermissions) {
-          await resetLeaderboard(guildId as string);
-          await interaction.reply('The leaderboard has been reset.');
-        } else {
-          await interaction.reply({
-            content: NO_PERMISSION_TEXT,
-            ephemeral: true,
-          });
-        }
-      }
-
-      if (commandName === 'server-status') {
-        if (hasValidPermissions) {
-          const count = await getUserCount(guildId as string);
-
-          await interaction.reply({
-            embeds: [serverStatusEmbed(count, isPremium, premiumExpires)],
-            ephemeral: true,
-          });
-        } else {
-          await interaction.reply({
-            content: NO_PERMISSION_TEXT,
-            ephemeral: true,
-          });
-        }
-      }
-
-      if (commandName === 'upgrade-server') {
-        if (hasValidPermissions) {
-          await interaction.reply({
-            content: UPGRADE_SERVER(guildId as string),
-            ephemeral: true,
-          });
-        } else {
-          await interaction.reply({
-            content: NO_PERMISSION_TEXT,
-            ephemeral: true,
-          });
-        }
-      }
-
-      if (commandName === 'enable-notifications') {
-        if (hasValidPermissions) {
-          const option = interaction.options.getString('type') ?? '';
-
-          await enableNotifications(guildId as string, option);
-
-          await interaction.reply({
-            content: `You have enabled ${option} notifications!`,
-            ephemeral: true,
-          });
-        } else {
-          await interaction.reply({
-            content: NO_PERMISSION_TEXT,
-            ephemeral: true,
-          });
-        }
-      }
-
-      if (commandName === 'disable-notifications') {
-        if (hasValidPermissions) {
-          const option = interaction.options.getString('type') ?? '';
-
-          await disableNotifications(guildId as string, option);
-
-          await interaction.reply({
-            content: `You have disabled ${option} notifications!`,
-            ephemeral: true,
-          });
-        } else {
-          await interaction.reply({
-            content: NO_PERMISSION_TEXT,
-            ephemeral: true,
-          });
-        }
-      }
-
-      if (commandName === 'my-stats') {
-        const data = await getWordle(guildId as string, userId);
-        if (data) {
-          const stats = generateUserStats(data);
-          await interaction.reply({
-            embeds: [statsEmbed(stats)],
-            ephemeral: interaction.options.getBoolean('ephemeral') ?? false,
-          });
-        } else {
-          await interaction.reply(NOT_PLAYED_TEXT);
-        }
-      }
-
-      if (commandName === 'my-achievements') {
-        const data = await getWordle(guildId as string, userId);
-        if (data) {
-          await interaction.reply({
-            embeds: [achievementsListEmbed(data)],
-            ephemeral: interaction.options.getBoolean('ephemeral') ?? false,
-          });
-        } else {
-          await interaction.reply(NOT_PLAYED_TEXT);
-        }
-      }
-
-      if (commandName === 'leaderboard') {
-        const option = interaction.options.getString('sort') ?? '';
-        const wordles = await getGuildLeaderboard(guildId as string);
-        const leaderboard = generateLeaderboard(wordles, option);
-        await interaction.reply(leaderboard);
-      }
-
-      if (commandName === 'help') {
+    if (commandName === 'set-channel') {
+      if (guildId && channelId) {
+        await setWordleChannel(guildId, channelId, guildName);
         await interaction.reply({
+          content: 'Wordle channel set!',
           embeds: [helpEmbed(hasValidPermissions)],
+        });
+      } else {
+        await interaction.reply(SOMETHING_WENT_WRONG_TEXT);
+      }
+    }
+
+    if (commandName === 'set-role') {
+      const role = interaction.options.getRole('role');
+      if (hasValidPermissions && role) {
+        await setAdminRole(guildId as string, role.id);
+        await interaction.reply({
+          content: SET_WORDLE_ADMIN_ROLE(role.name),
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: NO_PERMISSION_TEXT,
           ephemeral: true,
         });
       }
-    } catch (error) {
+    }
+
+    if (commandName === 'purge-user') {
+      const member = interaction.options.getUser('user');
+
+      if (hasValidPermissions && member) {
+        await purgeUser(guildId as string, member.id);
+        await interaction.reply({
+          content: PURGE_USER(member.username),
+          ephemeral: true,
+        });
+      }
+    }
+
+    if (commandName === 'reset-users') {
+      if (hasValidPermissions) {
+        await resetUsers(guildId as string);
+        await interaction.reply('All users have been reset.');
+      } else {
+        await interaction.reply({
+          content: NO_PERMISSION_TEXT,
+          ephemeral: true,
+        });
+      }
+    }
+
+    if (commandName === 'reset-leaderboard') {
+      if (hasValidPermissions) {
+        await resetLeaderboard(guildId as string);
+        await interaction.reply('The leaderboard has been reset.');
+      } else {
+        await interaction.reply({
+          content: NO_PERMISSION_TEXT,
+          ephemeral: true,
+        });
+      }
+    }
+
+    if (commandName === 'server-status') {
+      if (hasValidPermissions) {
+        const count = await getUserCount(guildId as string);
+
+        await interaction.reply({
+          embeds: [serverStatusEmbed(count, isPremium, premiumExpires)],
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: NO_PERMISSION_TEXT,
+          ephemeral: true,
+        });
+      }
+    }
+
+    if (commandName === 'upgrade-server') {
+      if (hasValidPermissions) {
+        await interaction.reply({
+          content: UPGRADE_SERVER(guildId as string),
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: NO_PERMISSION_TEXT,
+          ephemeral: true,
+        });
+      }
+    }
+
+    if (commandName === 'enable-notifications') {
+      if (hasValidPermissions) {
+        const option = interaction.options.getString('type') ?? '';
+
+        await enableNotifications(guildId as string, option);
+
+        await interaction.reply({
+          content: `You have enabled ${option} notifications!`,
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: NO_PERMISSION_TEXT,
+          ephemeral: true,
+        });
+      }
+    }
+
+    if (commandName === 'disable-notifications') {
+      if (hasValidPermissions) {
+        const option = interaction.options.getString('type') ?? '';
+
+        await disableNotifications(guildId as string, option);
+
+        await interaction.reply({
+          content: `You have disabled ${option} notifications!`,
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: NO_PERMISSION_TEXT,
+          ephemeral: true,
+        });
+      }
+    }
+
+    if (commandName === 'my-stats') {
+      const data = await getWordle(guildId as string, userId);
+      if (data) {
+        const stats = generateUserStats(data);
+        await interaction.reply({
+          embeds: [statsEmbed(stats)],
+          ephemeral: interaction.options.getBoolean('ephemeral') ?? false,
+        });
+      } else {
+        await interaction.reply(NOT_PLAYED_TEXT);
+      }
+    }
+
+    if (commandName === 'my-achievements') {
+      const data = await getWordle(guildId as string, userId);
+      if (data) {
+        await interaction.reply({
+          embeds: [achievementsListEmbed(data)],
+          ephemeral: interaction.options.getBoolean('ephemeral') ?? false,
+        });
+      } else {
+        await interaction.reply(NOT_PLAYED_TEXT);
+      }
+    }
+
+    if (commandName === 'leaderboard') {
+      const option = interaction.options.getString('sort') ?? '';
+      const wordles = await getGuildLeaderboard(guildId as string);
+      const leaderboard = generateLeaderboard(wordles, option);
+      await interaction.reply(leaderboard);
+    }
+
+    if (commandName === 'help') {
       await interaction.reply({
-        content: SOMETHING_WENT_WRONG_TEXT,
+        embeds: [helpEmbed(hasValidPermissions)],
         ephemeral: true,
       });
-      logError((error as Error).message, 'interactionCreate');
     }
+
+    if (commandName === 'export-data') {
+      if (hasValidPermissions) {
+        await interaction.reply({
+          content: EXPORT_DATA_TEXT(guildId),
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: NO_PERMISSION_TEXT,
+          ephemeral: true,
+        });
+      }
+    }
+  } catch (error) {
+    await interaction.reply({
+      content: SOMETHING_WENT_WRONG_TEXT,
+      ephemeral: true,
+    });
+    logError((error as Error).message, 'interactionCreate');
   }
 });
 (async () => {

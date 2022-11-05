@@ -45,8 +45,8 @@ var dotenv_1 = __importDefault(require("dotenv"));
 var commands_1 = __importDefault(require("./commands"));
 var embeds_1 = require("./embeds");
 var constants_1 = require("./util/constants");
-var bot_1 = require("./util/functions/bot");
-var firebase_1 = require("./util/functions/firebase");
+var botFunctions_1 = require("./util/botFunctions");
+var firebaseQueries_1 = require("./util/firebase/firebaseQueries");
 dotenv_1["default"].config();
 var client = new discord_js_1.Client({
     intents: [
@@ -65,7 +65,7 @@ client.on('guildCreate', function (guild) { return __awaiter(void 0, void 0, voi
         switch (_a.label) {
             case 0:
                 console.log("Joined guild ".concat(guild.name));
-                return [4 /*yield*/, (0, firebase_1.createGuild)(guild.id, guild.name)];
+                return [4 /*yield*/, (0, firebaseQueries_1.createGuild)(guild.id, guild.name)];
             case 1:
                 _a.sent();
                 return [2 /*return*/];
@@ -77,7 +77,7 @@ client.on('guildDelete', function (guild) { return __awaiter(void 0, void 0, voi
         switch (_a.label) {
             case 0:
                 console.log("Left guild ".concat(guild.name));
-                return [4 /*yield*/, (0, firebase_1.deleteGuild)(guild.id)];
+                return [4 /*yield*/, (0, firebaseQueries_1.deleteGuild)(guild.id)];
             case 1:
                 _a.sent();
                 return [2 /*return*/];
@@ -89,41 +89,43 @@ client.on('messageCreate', function (content) { return __awaiter(void 0, void 0,
     return __generator(this, function (_e) {
         switch (_e.label) {
             case 0:
-                _e.trys.push([0, 17, , 19]);
-                if ((0, bot_1.isRegularMessage)(content))
+                if ((0, botFunctions_1.isRegularMessage)(content))
                     return [2 /*return*/];
-                return [4 /*yield*/, (0, bot_1.getMessageVariables)(content)];
+                _e.label = 1;
             case 1:
-                _a = _e.sent(), guildId = _a.guildId, channelId = _a.channelId, id = _a.id, username = _a.username, notifications = _a.notifications, serverLimitReached = _a.serverLimitReached;
-                if (!serverLimitReached) return [3 /*break*/, 4];
-                if (!notifications['limits']) return [3 /*break*/, 3];
-                return [4 /*yield*/, content.reply({ content: constants_1.LIMIT_REACHED })];
+                _e.trys.push([1, 18, , 20]);
+                return [4 /*yield*/, (0, botFunctions_1.getMessageCreateVariables)(content)];
             case 2:
+                _a = _e.sent(), guildId = _a.guildId, channelId = _a.channelId, id = _a.id, username = _a.username, notifications = _a.notifications, serverLimitReached = _a.serverLimitReached;
+                if (!serverLimitReached) return [3 /*break*/, 5];
+                if (!notifications['limits']) return [3 /*break*/, 4];
+                return [4 /*yield*/, content.reply({ content: constants_1.LIMIT_REACHED })];
+            case 3:
                 _e.sent();
                 return [2 /*return*/];
-            case 3: return [2 /*return*/];
-            case 4: return [4 /*yield*/, (0, firebase_1.getGuildWordleChannel)(guildId, channelId)];
-            case 5:
-                isWordleChannel = _e.sent();
-                if (!isWordleChannel) return [3 /*break*/, 16];
-                return [4 /*yield*/, (0, firebase_1.getGuildWordles)(guildId)];
+            case 4: return [2 /*return*/];
+            case 5: return [4 /*yield*/, (0, firebaseQueries_1.getGuildWordleChannel)(guildId, channelId)];
             case 6:
-                wordles = _e.sent();
-                return [4 /*yield*/, (0, firebase_1.getGuildLeaderboard)(guildId)];
+                isWordleChannel = _e.sent();
+                if (!isWordleChannel) return [3 /*break*/, 17];
+                return [4 /*yield*/, (0, firebaseQueries_1.getGuildWordles)(guildId)];
             case 7:
-                leaderboards = _e.sent();
-                wordleNumber = (0, bot_1.getWordleNumber)(content);
-                _b = (0, bot_1.isValidWordleScore)(content), isValid = _b.isValid, score = _b.score;
-                if (!isValid) return [3 /*break*/, 14];
-                _c = score.split('/'), completed = _c[0], total = _c[1];
-                userData = (0, bot_1.getUserWordleData)(wordles, id, username);
-                leaderboardData = (0, bot_1.getUserLeaderboardData)(leaderboards, id, username);
-                if (!(wordleNumber <= userData.lastGameNumber)) return [3 /*break*/, 9];
-                return [4 /*yield*/, content.reply((0, constants_1.COMPLETED_ALREADY_TEXT)(userData.lastGameNumber.toString()))];
+                wordles = _e.sent();
+                return [4 /*yield*/, (0, firebaseQueries_1.getGuildLeaderboard)(guildId)];
             case 8:
+                leaderboards = _e.sent();
+                wordleNumber = (0, botFunctions_1.getWordleNumber)(content);
+                _b = (0, botFunctions_1.isValidWordleScore)(content), isValid = _b.isValid, score = _b.score;
+                if (!isValid) return [3 /*break*/, 15];
+                _c = score.split('/'), completed = _c[0], total = _c[1];
+                userData = (0, botFunctions_1.getUserWordleData)(wordles, id, username);
+                leaderboardData = (0, botFunctions_1.getUserLeaderboardData)(leaderboards, id, username);
+                if (!(wordleNumber <= userData.lastGameNumber)) return [3 /*break*/, 10];
+                return [4 /*yield*/, content.reply((0, constants_1.COMPLETED_ALREADY_TEXT)(userData.lastGameNumber.toString()))];
+            case 9:
                 _e.sent();
                 return [2 /*return*/];
-            case 9: return [4 /*yield*/, (0, bot_1.updateUserData)({
+            case 10: return [4 /*yield*/, (0, botFunctions_1.updateUserData)({
                     username: username,
                     data: userData,
                     completed: completed,
@@ -132,9 +134,9 @@ client.on('messageCreate', function (content) { return __awaiter(void 0, void 0,
                     guildId: guildId,
                     id: id
                 })];
-            case 10:
+            case 11:
                 _d = _e.sent(), newData = _d.userData, newAchievements = _d.newAchievements;
-                return [4 /*yield*/, (0, bot_1.updateLeaderboardData)({
+                return [4 /*yield*/, (0, botFunctions_1.updateLeaderboardData)({
                         username: username,
                         data: leaderboardData,
                         completed: completed,
@@ -142,48 +144,50 @@ client.on('messageCreate', function (content) { return __awaiter(void 0, void 0,
                         wordleNumber: wordleNumber,
                         guildId: guildId
                     })];
-            case 11:
+            case 12:
                 _e.sent();
-                if (!(newAchievements.length && notifications['achievements'] === true)) return [3 /*break*/, 13];
+                if (!(newAchievements.length && notifications['achievements'] === true)) return [3 /*break*/, 14];
                 return [4 /*yield*/, content.reply({
                         embeds: [(0, embeds_1.achievementsEmbed)(newData, newAchievements)]
                     })];
-            case 12:
+            case 13:
                 _e.sent();
-                _e.label = 13;
-            case 13: return [3 /*break*/, 16];
-            case 14: return [4 /*yield*/, content.reply(constants_1.INVALID_SCORE_TEXT)];
-            case 15:
+                _e.label = 14;
+            case 14: return [3 /*break*/, 17];
+            case 15: return [4 /*yield*/, content.reply(constants_1.INVALID_SCORE_TEXT)];
+            case 16:
                 _e.sent();
-                _e.label = 16;
-            case 16: return [3 /*break*/, 19];
-            case 17:
+                _e.label = 17;
+            case 17: return [3 /*break*/, 20];
+            case 18:
                 error_1 = _e.sent();
                 return [4 /*yield*/, content.reply(constants_1.SOMETHING_WENT_WRONG_TEXT)];
-            case 18:
+            case 19:
                 _e.sent();
-                (0, firebase_1.logError)(error_1.message, 'messageCreate');
-                return [3 /*break*/, 19];
-            case 19: return [2 /*return*/];
+                (0, firebaseQueries_1.logError)(error_1.message, 'messageCreate');
+                return [3 /*break*/, 20];
+            case 20: return [2 /*return*/];
         }
     });
 }); });
 client.on('interactionCreate', function (interaction) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, hasValidPermissions, commandName, userId, guildId, channelId, guildName, isPremium, premiumExpires, role, member, count, option, option, data, stats, data, option, wordles, leaderboard, error_2;
+    var command, _a, hasValidPermissions, commandName, userId, guildId, channelId, guildName, isPremium, premiumExpires, role, member, count, option, option, data, stats, data, option, wordles, leaderboard, error_2;
     var _b, _c, _d, _e, _f;
     return __generator(this, function (_g) {
         switch (_g.label) {
             case 0:
-                if (!interaction.isChatInputCommand()) return [3 /*break*/, 62];
+                command = interaction.isChatInputCommand();
+                if (!command)
+                    return [2 /*return*/];
                 _g.label = 1;
             case 1:
-                _g.trys.push([1, 60, , 62]);
-                return [4 /*yield*/, (0, bot_1.getCommandVariables)(interaction)];
+                _g.trys.push([1, 64, , 66]);
+                return [4 /*yield*/, (0, botFunctions_1.getInteractionCreateVariables)(interaction)];
             case 2:
                 _a = _g.sent(), hasValidPermissions = _a.hasValidPermissions, commandName = _a.commandName, userId = _a.userId, guildId = _a.guildId, channelId = _a.channelId, guildName = _a.guildName, isPremium = _a.isPremium, premiumExpires = _a.premiumExpires;
                 if (!(commandName === 'set-channel')) return [3 /*break*/, 7];
                 if (!(guildId && channelId)) return [3 /*break*/, 5];
-                return [4 /*yield*/, (0, firebase_1.setWordleChannel)(guildId, channelId, guildName)];
+                return [4 /*yield*/, (0, firebaseQueries_1.setWordleChannel)(guildId, channelId, guildName)];
             case 3:
                 _g.sent();
                 return [4 /*yield*/, interaction.reply({
@@ -201,7 +205,7 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
                 if (!(commandName === 'set-role')) return [3 /*break*/, 12];
                 role = interaction.options.getRole('role');
                 if (!(hasValidPermissions && role)) return [3 /*break*/, 10];
-                return [4 /*yield*/, (0, firebase_1.setAdminRole)(guildId, role.id)];
+                return [4 /*yield*/, (0, firebaseQueries_1.setAdminRole)(guildId, role.id)];
             case 8:
                 _g.sent();
                 return [4 /*yield*/, interaction.reply({
@@ -222,7 +226,7 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
                 if (!(commandName === 'purge-user')) return [3 /*break*/, 15];
                 member = interaction.options.getUser('user');
                 if (!(hasValidPermissions && member)) return [3 /*break*/, 15];
-                return [4 /*yield*/, (0, firebase_1.purgeUser)(guildId, member.id)];
+                return [4 /*yield*/, (0, firebaseQueries_1.purgeUser)(guildId, member.id)];
             case 13:
                 _g.sent();
                 return [4 /*yield*/, interaction.reply({
@@ -235,7 +239,7 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
             case 15:
                 if (!(commandName === 'reset-users')) return [3 /*break*/, 20];
                 if (!hasValidPermissions) return [3 /*break*/, 18];
-                return [4 /*yield*/, (0, firebase_1.resetUsers)(guildId)];
+                return [4 /*yield*/, (0, firebaseQueries_1.resetUsers)(guildId)];
             case 16:
                 _g.sent();
                 return [4 /*yield*/, interaction.reply('All users have been reset.')];
@@ -252,7 +256,7 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
             case 20:
                 if (!(commandName === 'reset-leaderboard')) return [3 /*break*/, 25];
                 if (!hasValidPermissions) return [3 /*break*/, 23];
-                return [4 /*yield*/, (0, firebase_1.resetLeaderboard)(guildId)];
+                return [4 /*yield*/, (0, firebaseQueries_1.resetLeaderboard)(guildId)];
             case 21:
                 _g.sent();
                 return [4 /*yield*/, interaction.reply('The leaderboard has been reset.')];
@@ -269,7 +273,7 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
             case 25:
                 if (!(commandName === 'server-status')) return [3 /*break*/, 30];
                 if (!hasValidPermissions) return [3 /*break*/, 28];
-                return [4 /*yield*/, (0, firebase_1.getUserCount)(guildId)];
+                return [4 /*yield*/, (0, firebaseQueries_1.getUserCount)(guildId)];
             case 26:
                 count = _g.sent();
                 return [4 /*yield*/, interaction.reply({
@@ -307,7 +311,7 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
                 if (!(commandName === 'enable-notifications')) return [3 /*break*/, 39];
                 if (!hasValidPermissions) return [3 /*break*/, 37];
                 option = (_b = interaction.options.getString('type')) !== null && _b !== void 0 ? _b : '';
-                return [4 /*yield*/, (0, firebase_1.enableNotifications)(guildId, option)];
+                return [4 /*yield*/, (0, firebaseQueries_1.enableNotifications)(guildId, option)];
             case 35:
                 _g.sent();
                 return [4 /*yield*/, interaction.reply({
@@ -328,7 +332,7 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
                 if (!(commandName === 'disable-notifications')) return [3 /*break*/, 44];
                 if (!hasValidPermissions) return [3 /*break*/, 42];
                 option = (_c = interaction.options.getString('type')) !== null && _c !== void 0 ? _c : '';
-                return [4 /*yield*/, (0, firebase_1.disableNotifications)(guildId, option)];
+                return [4 /*yield*/, (0, firebaseQueries_1.disableNotifications)(guildId, option)];
             case 40:
                 _g.sent();
                 return [4 /*yield*/, interaction.reply({
@@ -347,11 +351,11 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
                 _g.label = 44;
             case 44:
                 if (!(commandName === 'my-stats')) return [3 /*break*/, 49];
-                return [4 /*yield*/, (0, firebase_1.getWordle)(guildId, userId)];
+                return [4 /*yield*/, (0, firebaseQueries_1.getWordle)(guildId, userId)];
             case 45:
                 data = _g.sent();
                 if (!data) return [3 /*break*/, 47];
-                stats = (0, bot_1.generateUserStats)(data);
+                stats = (0, botFunctions_1.generateUserStats)(data);
                 return [4 /*yield*/, interaction.reply({
                         embeds: [(0, embeds_1.statsEmbed)(stats)],
                         ephemeral: (_d = interaction.options.getBoolean('ephemeral')) !== null && _d !== void 0 ? _d : false
@@ -365,7 +369,7 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
                 _g.label = 49;
             case 49:
                 if (!(commandName === 'my-achievements')) return [3 /*break*/, 54];
-                return [4 /*yield*/, (0, firebase_1.getWordle)(guildId, userId)];
+                return [4 /*yield*/, (0, firebaseQueries_1.getWordle)(guildId, userId)];
             case 50:
                 data = _g.sent();
                 if (!data) return [3 /*break*/, 52];
@@ -383,10 +387,10 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
             case 54:
                 if (!(commandName === 'leaderboard')) return [3 /*break*/, 57];
                 option = (_f = interaction.options.getString('sort')) !== null && _f !== void 0 ? _f : '';
-                return [4 /*yield*/, (0, firebase_1.getGuildLeaderboard)(guildId)];
+                return [4 /*yield*/, (0, firebaseQueries_1.getGuildLeaderboard)(guildId)];
             case 55:
                 wordles = _g.sent();
-                leaderboard = (0, bot_1.generateLeaderboard)(wordles, option);
+                leaderboard = (0, botFunctions_1.generateLeaderboard)(wordles, option);
                 return [4 /*yield*/, interaction.reply(leaderboard)];
             case 56:
                 _g.sent();
@@ -400,18 +404,35 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
             case 58:
                 _g.sent();
                 _g.label = 59;
-            case 59: return [3 /*break*/, 62];
+            case 59:
+                if (!(commandName === 'export-data')) return [3 /*break*/, 63];
+                if (!hasValidPermissions) return [3 /*break*/, 61];
+                return [4 /*yield*/, interaction.reply({
+                        content: (0, constants_1.EXPORT_DATA_TEXT)(guildId),
+                        ephemeral: true
+                    })];
             case 60:
+                _g.sent();
+                return [3 /*break*/, 63];
+            case 61: return [4 /*yield*/, interaction.reply({
+                    content: constants_1.NO_PERMISSION_TEXT,
+                    ephemeral: true
+                })];
+            case 62:
+                _g.sent();
+                _g.label = 63;
+            case 63: return [3 /*break*/, 66];
+            case 64:
                 error_2 = _g.sent();
                 return [4 /*yield*/, interaction.reply({
                         content: constants_1.SOMETHING_WENT_WRONG_TEXT,
                         ephemeral: true
                     })];
-            case 61:
+            case 65:
                 _g.sent();
-                (0, firebase_1.logError)(error_2.message, 'interactionCreate');
-                return [3 /*break*/, 62];
-            case 62: return [2 /*return*/];
+                (0, firebaseQueries_1.logError)(error_2.message, 'interactionCreate');
+                return [3 /*break*/, 66];
+            case 66: return [2 /*return*/];
         }
     });
 }); });
@@ -430,7 +451,7 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
                 return [3 /*break*/, 3];
             case 2:
                 error_3 = _a.sent();
-                (0, firebase_1.logError)(error_3.message, 'applicationCommands');
+                (0, firebaseQueries_1.logError)(error_3.message, 'applicationCommands');
                 return [3 /*break*/, 3];
             case 3: return [2 /*return*/];
         }

@@ -11,6 +11,7 @@ import upgradeServerCommand from './upgrade-server';
 import helpCommand from './help';
 import enableNotificationsCommand from './enable-notifications';
 import disableNotificationsCommand from './disable-notifications';
+import exportDataCommand from './export-data';
 
 export default [
   leaderboardCommand,
@@ -26,4 +27,5 @@ export default [
   helpCommand,
   enableNotificationsCommand,
   disableNotificationsCommand,
+  exportDataCommand,
 ];

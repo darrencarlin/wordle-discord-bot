@@ -4,38 +4,35 @@ import {
   GuildMemberRoleManager,
   Message,
 } from 'discord.js';
-import { achievementChecks } from '../achievements';
-import { NO_LEADERBOARD_DATA, POPULATE_USER, SERVER_LIMIT } from '../constants';
+import { achievementChecks } from './achievements';
+import { NO_LEADERBOARD_DATA, POPULATE_USER, SERVER_LIMIT } from './constants';
 import {
   Achievement,
   DiscordIds,
   UpdateLeaderboardDataProps,
   UpdateUserDataProps,
   User,
-} from '../types';
+} from './types';
 import {
   getAdminRoleId,
-  getGuildMetadata,
-  getUserCount,
-  getUsers,
+  getGuildData,
   updateGuildLeaderboardData,
   updateGuildUserData,
-} from './firebase';
+} from './firebase/firebaseQueries';
 
-export const getMessageVariables = async (content: Message) => {
+export const getMessageCreateVariables = async (content: Message) => {
   const { guildId, channelId } = content as DiscordIds;
   const { id, username } = content.author;
-  const { notifications, isPremium, premiumExpires } = await getGuildMetadata(
-    guildId,
-  );
-  const users = await getUsers(guildId);
-  const serverCount = await getUserCount(guildId);
+
+  const { notifications, isPremium, premiumExpires, users, serverCount } =
+    await getGuildData(guildId);
+
   const userLimit = serverCount >= SERVER_LIMIT;
   const premium = isPremium || premiumExpires > new Date().getTime();
   const newWordleUser = users.filter((user) => user.userId === id).length === 0;
   const serverLimitReached = userLimit && !premium && newWordleUser;
 
-  return {
+  const data = {
     guildId,
     channelId,
     id,
@@ -43,9 +40,13 @@ export const getMessageVariables = async (content: Message) => {
     notifications,
     serverLimitReached,
   };
+
+  return data;
 };
 
-export const getCommandVariables = async (interaction: CommandInteraction) => {
+export const getInteractionCreateVariables = async (
+  interaction: CommandInteraction,
+) => {
   const serverOwnerId = interaction.guild?.ownerId;
   const commandName = interaction.commandName;
   const userId = interaction.user.id;
@@ -53,7 +54,7 @@ export const getCommandVariables = async (interaction: CommandInteraction) => {
   const channelId = interaction.channelId;
   const guildName = interaction.guild?.name as string;
 
-  const { isPremium, premiumExpires } = await getGuildMetadata(guildId);
+  const { isPremium, premiumExpires } = await getGuildData(guildId);
 
   const adminRoleId = await getAdminRoleId(guildId ?? '');
   const isAdmin = (
@@ -64,7 +65,7 @@ export const getCommandVariables = async (interaction: CommandInteraction) => {
 
   const hasValidPermissions = isAdmin || serverOwner;
 
-  return {
+  const data = {
     hasValidPermissions,
     commandName,
     userId,
@@ -74,6 +75,8 @@ export const getCommandVariables = async (interaction: CommandInteraction) => {
     isPremium,
     premiumExpires,
   };
+
+  return data;
 };
 
 export const isRegularMessage = (content: Message) =>
