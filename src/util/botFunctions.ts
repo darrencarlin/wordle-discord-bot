@@ -8,6 +8,7 @@ import { achievementChecks } from './achievements';
 import { NO_LEADERBOARD_DATA, POPULATE_USER, SERVER_LIMIT } from './constants';
 import {
   Achievement,
+  Command,
   DiscordIds,
   UpdateLeaderboardDataProps,
   UpdateUserDataProps,
@@ -47,7 +48,7 @@ export const getInteractionCreateVariables = async (
   interaction: CommandInteraction,
 ) => {
   const serverOwnerId = interaction.guild?.ownerId;
-  const commandName = interaction.commandName;
+  const commandName = interaction.commandName as Command;
   const userId = interaction.user.id;
   const guildId = interaction.guildId as string;
   const channelId = interaction.channelId;
