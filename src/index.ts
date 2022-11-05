@@ -58,6 +58,7 @@ import {
   setAdminRole,
   setWordleChannel,
 } from './util/firebase/firebaseQueries';
+import { DiscordIds } from './util/types';
 
 dotenv.config();
 
@@ -86,17 +87,14 @@ client.on('guildDelete', async (guild) => {
 });
 
 client.on('messageCreate', async (content: Message) => {
-  if (isRegularMessage(content)) return;
+  console.log('message created');
+  const { guildId, channelId } = content as DiscordIds;
+  const isWordleChannel = await getGuildWordleChannel(guildId, channelId);
+  if (isRegularMessage(content) || !isWordleChannel) return;
 
   try {
-    const {
-      guildId,
-      channelId,
-      id,
-      username,
-      notifications,
-      serverLimitReached,
-    } = await getMessageCreateVariables(content);
+    const { guildId, id, username, notifications, serverLimitReached } =
+      await getMessageCreateVariables(content);
 
     if (serverLimitReached) {
       if (notifications['limits']) {
@@ -106,62 +104,58 @@ client.on('messageCreate', async (content: Message) => {
       return;
     }
 
-    const isWordleChannel = await getGuildWordleChannel(guildId, channelId);
+    const wordles = await getGuildWordles(guildId);
+    const leaderboards = await getGuildLeaderboard(guildId);
+    const wordleNumber = getWordleNumber(content)!;
 
-    if (isWordleChannel) {
-      const wordles = await getGuildWordles(guildId);
-      const leaderboards = await getGuildLeaderboard(guildId);
-      const wordleNumber = getWordleNumber(content)!;
+    const { isValid, score } = isValidWordleScore(content);
 
-      const { isValid, score } = isValidWordleScore(content);
+    if (isValid) {
+      const [completed, total] = score.split('/');
 
-      if (isValid) {
-        const [completed, total] = score.split('/');
+      // Get the existing user data or create a new one
+      const userData = getUserWordleData(wordles, id, username);
 
-        // Get the existing user data or create a new one
-        const userData = getUserWordleData(wordles, id, username);
+      const leaderboardData = getUserLeaderboardData(
+        leaderboards,
+        id,
+        username,
+      );
 
-        const leaderboardData = getUserLeaderboardData(
-          leaderboards,
-          id,
-          username,
+      // If the user tries to submit the same wordle or an earlier one, return
+      if (wordleNumber <= userData.lastGameNumber) {
+        await content.reply(
+          COMPLETED_ALREADY_TEXT(userData.lastGameNumber.toString()),
         );
-
-        // If the user tries to submit the same wordle or an earlier one, return
-        if (wordleNumber <= userData.lastGameNumber) {
-          await content.reply(
-            COMPLETED_ALREADY_TEXT(userData.lastGameNumber.toString()),
-          );
-          return;
-        }
-
-        const { userData: newData, newAchievements } = await updateUserData({
-          username,
-          data: userData,
-          completed,
-          total,
-          wordleNumber,
-          guildId,
-          id,
-        });
-
-        await updateLeaderboardData({
-          username,
-          data: leaderboardData,
-          completed,
-          total,
-          wordleNumber,
-          guildId,
-        });
-
-        if (newAchievements.length && notifications['achievements'] === true) {
-          await content.reply({
-            embeds: [achievementsEmbed(newData, newAchievements)],
-          });
-        }
-      } else {
-        await content.reply(INVALID_SCORE_TEXT);
+        return;
       }
+
+      const { userData: newData, newAchievements } = await updateUserData({
+        username,
+        data: userData,
+        completed,
+        total,
+        wordleNumber,
+        guildId,
+        id,
+      });
+
+      await updateLeaderboardData({
+        username,
+        data: leaderboardData,
+        completed,
+        total,
+        wordleNumber,
+        guildId,
+      });
+
+      if (newAchievements.length && notifications['achievements'] === true) {
+        await content.reply({
+          embeds: [achievementsEmbed(newData, newAchievements)],
+        });
+      }
+    } else {
+      await content.reply(INVALID_SCORE_TEXT);
     }
   } catch (error) {
     await content.reply(SOMETHING_WENT_WRONG_TEXT);

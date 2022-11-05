@@ -52,22 +52,21 @@ var achievements_1 = require("./achievements");
 var constants_1 = require("./constants");
 var firebaseQueries_1 = require("./firebase/firebaseQueries");
 var getMessageCreateVariables = function (content) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, guildId, channelId, _b, id, username, _c, notifications, isPremium, premiumExpires, users, serverCount, userLimit, premium, newWordleUser, serverLimitReached, data;
-    return __generator(this, function (_d) {
-        switch (_d.label) {
+    var guildId, _a, id, username, _b, notifications, isPremium, premiumExpires, users, serverCount, userLimit, premium, newWordleUser, serverLimitReached, data;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
             case 0:
-                _a = content, guildId = _a.guildId, channelId = _a.channelId;
-                _b = content.author, id = _b.id, username = _b.username;
+                guildId = content.guildId;
+                _a = content.author, id = _a.id, username = _a.username;
                 return [4 /*yield*/, (0, firebaseQueries_1.getGuildData)(guildId)];
             case 1:
-                _c = _d.sent(), notifications = _c.notifications, isPremium = _c.isPremium, premiumExpires = _c.premiumExpires, users = _c.users, serverCount = _c.serverCount;
+                _b = _c.sent(), notifications = _b.notifications, isPremium = _b.isPremium, premiumExpires = _b.premiumExpires, users = _b.users, serverCount = _b.serverCount;
                 userLimit = serverCount >= constants_1.SERVER_LIMIT;
                 premium = isPremium || premiumExpires > new Date().getTime();
                 newWordleUser = users.filter(function (user) { return user.userId === id; }).length === 0;
                 serverLimitReached = userLimit && !premium && newWordleUser;
                 data = {
                     guildId: guildId,
-                    channelId: channelId,
                     id: id,
                     username: username,
                     notifications: notifications,

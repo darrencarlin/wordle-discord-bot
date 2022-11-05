@@ -83,3 +83,19 @@ export interface GuildMessageVariables {
   premiumExpires: string;
   serverLimitReached: boolean;
 }
+
+export type Command =
+  | 'set-channel'
+  | 'set-role'
+  | 'purge-user'
+  | 'reset-users'
+  | 'reset-leaderboard'
+  | 'server-status'
+  | 'upgrade-server'
+  | 'enable-notifications'
+  | 'disable-notifications'
+  | 'my-stats'
+  | 'my-achievements'
+  | 'leaderboard'
+  | 'help'
+  | 'export-data';

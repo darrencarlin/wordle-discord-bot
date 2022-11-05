@@ -85,45 +85,45 @@ client.on('guildDelete', function (guild) { return __awaiter(void 0, void 0, voi
     });
 }); });
 client.on('messageCreate', function (content) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, guildId, channelId, id, username, notifications, serverLimitReached, isWordleChannel, wordles, leaderboards, wordleNumber, _b, isValid, score, _c, completed, total, userData, leaderboardData, _d, newData, newAchievements, error_1;
-    return __generator(this, function (_e) {
-        switch (_e.label) {
+    var _a, guildId, channelId, isWordleChannel, _b, guildId_1, id, username, notifications, serverLimitReached, wordles, leaderboards, wordleNumber, _c, isValid, score, _d, completed, total, userData, leaderboardData, _e, newData, newAchievements, error_1;
+    return __generator(this, function (_f) {
+        switch (_f.label) {
             case 0:
-                if ((0, botFunctions_1.isRegularMessage)(content))
-                    return [2 /*return*/];
-                _e.label = 1;
+                _a = content, guildId = _a.guildId, channelId = _a.channelId;
+                return [4 /*yield*/, (0, firebaseQueries_1.getGuildWordleChannel)(guildId, channelId)];
             case 1:
-                _e.trys.push([1, 18, , 20]);
-                return [4 /*yield*/, (0, botFunctions_1.getMessageCreateVariables)(content)];
+                isWordleChannel = _f.sent();
+                if ((0, botFunctions_1.isRegularMessage)(content) || !isWordleChannel)
+                    return [2 /*return*/];
+                _f.label = 2;
             case 2:
-                _a = _e.sent(), guildId = _a.guildId, channelId = _a.channelId, id = _a.id, username = _a.username, notifications = _a.notifications, serverLimitReached = _a.serverLimitReached;
-                if (!serverLimitReached) return [3 /*break*/, 5];
-                if (!notifications['limits']) return [3 /*break*/, 4];
-                return [4 /*yield*/, content.reply({ content: constants_1.LIMIT_REACHED })];
+                _f.trys.push([2, 18, , 20]);
+                return [4 /*yield*/, (0, botFunctions_1.getMessageCreateVariables)(content)];
             case 3:
-                _e.sent();
+                _b = _f.sent(), guildId_1 = _b.guildId, id = _b.id, username = _b.username, notifications = _b.notifications, serverLimitReached = _b.serverLimitReached;
+                if (!serverLimitReached) return [3 /*break*/, 6];
+                if (!notifications['limits']) return [3 /*break*/, 5];
+                return [4 /*yield*/, content.reply({ content: constants_1.LIMIT_REACHED })];
+            case 4:
+                _f.sent();
                 return [2 /*return*/];
-            case 4: return [2 /*return*/];
-            case 5: return [4 /*yield*/, (0, firebaseQueries_1.getGuildWordleChannel)(guildId, channelId)];
-            case 6:
-                isWordleChannel = _e.sent();
-                if (!isWordleChannel) return [3 /*break*/, 17];
-                return [4 /*yield*/, (0, firebaseQueries_1.getGuildWordles)(guildId)];
+            case 5: return [2 /*return*/];
+            case 6: return [4 /*yield*/, (0, firebaseQueries_1.getGuildWordles)(guildId_1)];
             case 7:
-                wordles = _e.sent();
-                return [4 /*yield*/, (0, firebaseQueries_1.getGuildLeaderboard)(guildId)];
+                wordles = _f.sent();
+                return [4 /*yield*/, (0, firebaseQueries_1.getGuildLeaderboard)(guildId_1)];
             case 8:
-                leaderboards = _e.sent();
+                leaderboards = _f.sent();
                 wordleNumber = (0, botFunctions_1.getWordleNumber)(content);
-                _b = (0, botFunctions_1.isValidWordleScore)(content), isValid = _b.isValid, score = _b.score;
+                _c = (0, botFunctions_1.isValidWordleScore)(content), isValid = _c.isValid, score = _c.score;
                 if (!isValid) return [3 /*break*/, 15];
-                _c = score.split('/'), completed = _c[0], total = _c[1];
+                _d = score.split('/'), completed = _d[0], total = _d[1];
                 userData = (0, botFunctions_1.getUserWordleData)(wordles, id, username);
                 leaderboardData = (0, botFunctions_1.getUserLeaderboardData)(leaderboards, id, username);
                 if (!(wordleNumber <= userData.lastGameNumber)) return [3 /*break*/, 10];
                 return [4 /*yield*/, content.reply((0, constants_1.COMPLETED_ALREADY_TEXT)(userData.lastGameNumber.toString()))];
             case 9:
-                _e.sent();
+                _f.sent();
                 return [2 /*return*/];
             case 10: return [4 /*yield*/, (0, botFunctions_1.updateUserData)({
                     username: username,
@@ -131,39 +131,39 @@ client.on('messageCreate', function (content) { return __awaiter(void 0, void 0,
                     completed: completed,
                     total: total,
                     wordleNumber: wordleNumber,
-                    guildId: guildId,
+                    guildId: guildId_1,
                     id: id
                 })];
             case 11:
-                _d = _e.sent(), newData = _d.userData, newAchievements = _d.newAchievements;
+                _e = _f.sent(), newData = _e.userData, newAchievements = _e.newAchievements;
                 return [4 /*yield*/, (0, botFunctions_1.updateLeaderboardData)({
                         username: username,
                         data: leaderboardData,
                         completed: completed,
                         total: total,
                         wordleNumber: wordleNumber,
-                        guildId: guildId
+                        guildId: guildId_1
                     })];
             case 12:
-                _e.sent();
+                _f.sent();
                 if (!(newAchievements.length && notifications['achievements'] === true)) return [3 /*break*/, 14];
                 return [4 /*yield*/, content.reply({
                         embeds: [(0, embeds_1.achievementsEmbed)(newData, newAchievements)]
                     })];
             case 13:
-                _e.sent();
-                _e.label = 14;
+                _f.sent();
+                _f.label = 14;
             case 14: return [3 /*break*/, 17];
             case 15: return [4 /*yield*/, content.reply(constants_1.INVALID_SCORE_TEXT)];
             case 16:
-                _e.sent();
-                _e.label = 17;
+                _f.sent();
+                _f.label = 17;
             case 17: return [3 /*break*/, 20];
             case 18:
-                error_1 = _e.sent();
+                error_1 = _f.sent();
                 return [4 /*yield*/, content.reply(constants_1.SOMETHING_WENT_WRONG_TEXT)];
             case 19:
-                _e.sent();
+                _f.sent();
                 (0, firebaseQueries_1.logError)(error_1.message, 'messageCreate');
                 return [3 /*break*/, 20];
             case 20: return [2 /*return*/];

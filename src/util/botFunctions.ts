@@ -21,7 +21,7 @@ import {
 } from './firebase/firebaseQueries';
 
 export const getMessageCreateVariables = async (content: Message) => {
-  const { guildId, channelId } = content as DiscordIds;
+  const { guildId } = content as DiscordIds;
   const { id, username } = content.author;
 
   const { notifications, isPremium, premiumExpires, users, serverCount } =
@@ -34,7 +34,6 @@ export const getMessageCreateVariables = async (content: Message) => {
 
   const data = {
     guildId,
-    channelId,
     id,
     username,
     notifications,
