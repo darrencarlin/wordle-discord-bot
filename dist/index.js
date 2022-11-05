@@ -89,6 +89,7 @@ client.on('messageCreate', function (content) { return __awaiter(void 0, void 0,
     return __generator(this, function (_f) {
         switch (_f.label) {
             case 0:
+                console.log('message created');
                 _a = content, guildId = _a.guildId, channelId = _a.channelId;
                 return [4 /*yield*/, (0, firebaseQueries_1.getGuildWordleChannel)(guildId, channelId)];
             case 1:
