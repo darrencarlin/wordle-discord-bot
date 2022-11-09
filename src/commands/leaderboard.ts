@@ -12,7 +12,7 @@ const leaderboardCommand = new SlashCommandBuilder()
         { name: 'Average guesses', value: 'averageGuesses' },
         { name: 'Current streak', value: 'currentStreak' },
         { name: 'Best score', value: 'bestScore' },
-        { name: 'Total wordles', value: 'totalWordles' },
+        { name: 'Total wordles ', value: 'totalWordles' },
         { name: 'Wordles Completed', value: 'wordlesCompleted' },
         { name: 'Wordles Failed', value: 'wordlesFailed' },
       ),

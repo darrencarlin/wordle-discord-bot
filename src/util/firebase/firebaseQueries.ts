@@ -189,10 +189,11 @@ export const getWordle = async (id: string, userId: string) => {
 };
 
 export const logError = async (error: string, type: string) => {
-  await db.collection('errors').add({
+  const timestamp = new Date().toUTCString();
+  await db.collection('errors').doc(timestamp).set({
     error,
     type,
-    timestamp: new Date().getTime(),
+    timestamp,
   });
 };
 

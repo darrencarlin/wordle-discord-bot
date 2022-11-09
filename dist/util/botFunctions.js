@@ -200,7 +200,7 @@ var generateUserStats = function (data) {
     stats.push("".concat(data.bestScore));
     stats.push("".concat(data.lastGameNumber));
     stats.push("".concat(data.scores
-        .map(function (score, index) { return "".concat(index + 1, " word gueses x ").concat(score); })
+        .map(function (score, index) { return "".concat(index + 1, " word guesses x ").concat(score); })
         .join('\n')));
     return stats;
 };
@@ -265,8 +265,7 @@ var calculateBestScore = function (completed, userData) {
     if (Number(completed) < userData.bestScore || userData.bestScore === 0) {
         userData.bestScore = Number(completed);
     }
-    // update the scores array
-    if (isNaN(Number(completed))) {
+    if (Number(completed)) {
         userData.scores[Number(completed) - 1]++;
     }
     return userData;

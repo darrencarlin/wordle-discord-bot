@@ -194,7 +194,7 @@ export const generateUserStats = (data: User) => {
   stats.push(`${data.lastGameNumber}`);
   stats.push(
     `${data.scores
-      .map((score, index) => `${index + 1} word gueses x ${score}`)
+      .map((score, index) => `${index + 1} word guesses x ${score}`)
       .join('\n')}`,
   );
 

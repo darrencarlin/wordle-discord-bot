@@ -359,13 +359,16 @@ var getWordle = function (id, userId) { return __awaiter(void 0, void 0, void 0,
 }); };
 exports.getWordle = getWordle;
 var logError = function (error, type) { return __awaiter(void 0, void 0, void 0, function () {
+    var timestamp;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, firebaseAdmin_1.db.collection('errors').add({
-                    error: error,
-                    type: type,
-                    timestamp: new Date().getTime()
-                })];
+            case 0:
+                timestamp = new Date().toUTCString();
+                return [4 /*yield*/, firebaseAdmin_1.db.collection('errors').doc(timestamp).set({
+                        error: error,
+                        type: type,
+                        timestamp: timestamp
+                    })];
             case 1:
                 _a.sent();
                 return [2 /*return*/];
