@@ -47,12 +47,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.updateLeaderboardData = exports.updateUserData = exports.calculateAchievements = exports.countCompletedAchievements = exports.calculateBestScore = exports.calculateStreak = exports.calculateUpdatedWordleData = exports.checkForNewUsername = exports.getWordleNumber = exports.generateUserStats = exports.generateLeaderboard = exports.sortLeaderboard = exports.isValidWordleScore = exports.getUserLeaderboardData = exports.getUserWordleData = exports.isRegularMessage = exports.getInteractionCreateVariables = exports.getMessageCreateVariables = void 0;
+exports.updateLeaderboardData = exports.updateUserData = exports.calculateAchievements = exports.countCompletedAchievements = exports.calculateBestScore = exports.calculateStreak = exports.calculateUpdatedWordleData = exports.checkForNewUsername = exports.getWordleNumber = exports.generateUserStats = exports.generateLeaderboard = exports.sortLeaderboard = exports.isValidWordleScore = exports.getUserLeaderboardData = exports.getUserWordleData = exports.isRegularMessage = exports.getInteractionCreateVars = exports.getMessageCreateVars = void 0;
 var achievements_1 = require("./achievements");
 var constants_1 = require("./constants");
 var firebaseQueries_1 = require("./firebase/firebaseQueries");
-var getMessageCreateVariables = function (content) { return __awaiter(void 0, void 0, void 0, function () {
-    var guildId, _a, id, username, _b, notifications, isPremium, premiumExpires, users, serverCount, userLimit, premium, newWordleUser, serverLimitReached, data;
+var getMessageCreateVars = function (content) { return __awaiter(void 0, void 0, void 0, function () {
+    var guildId, _a, id, username, _b, notifications, isPremium, premiumExpires, users, serverCount, userLimit, premium, newWordleUser, serverLimitReached;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
@@ -65,20 +65,19 @@ var getMessageCreateVariables = function (content) { return __awaiter(void 0, vo
                 premium = isPremium || premiumExpires > new Date().getTime();
                 newWordleUser = users.filter(function (user) { return user.userId === id; }).length === 0;
                 serverLimitReached = userLimit && !premium && newWordleUser;
-                data = {
-                    guildId: guildId,
-                    id: id,
-                    username: username,
-                    notifications: notifications,
-                    serverLimitReached: serverLimitReached
-                };
-                return [2 /*return*/, data];
+                return [2 /*return*/, {
+                        guildId: guildId,
+                        id: id,
+                        username: username,
+                        notifications: notifications,
+                        serverLimitReached: serverLimitReached
+                    }];
         }
     });
 }); };
-exports.getMessageCreateVariables = getMessageCreateVariables;
-var getInteractionCreateVariables = function (interaction) { return __awaiter(void 0, void 0, void 0, function () {
-    var serverOwnerId, commandName, userId, guildId, channelId, guildName, _a, isPremium, premiumExpires, adminRoleId, isAdmin, serverOwner, hasValidPermissions, data;
+exports.getMessageCreateVars = getMessageCreateVars;
+var getInteractionCreateVars = function (interaction) { return __awaiter(void 0, void 0, void 0, function () {
+    var serverOwnerId, commandName, userId, guildId, channelId, guildName, _a, isPremium, premiumExpires, adminRoleId, isAdmin, serverOwner, hasValidPermissions;
     var _b, _c, _d;
     return __generator(this, function (_e) {
         switch (_e.label) {
@@ -98,21 +97,20 @@ var getInteractionCreateVariables = function (interaction) { return __awaiter(vo
                 isAdmin = ((_d = interaction === null || interaction === void 0 ? void 0 : interaction.member) === null || _d === void 0 ? void 0 : _d.roles).cache.has(adminRoleId);
                 serverOwner = serverOwnerId === userId;
                 hasValidPermissions = isAdmin || serverOwner;
-                data = {
-                    hasValidPermissions: hasValidPermissions,
-                    commandName: commandName,
-                    userId: userId,
-                    guildId: guildId,
-                    channelId: channelId,
-                    guildName: guildName,
-                    isPremium: isPremium,
-                    premiumExpires: premiumExpires
-                };
-                return [2 /*return*/, data];
+                return [2 /*return*/, {
+                        hasValidPermissions: hasValidPermissions,
+                        commandName: commandName,
+                        userId: userId,
+                        guildId: guildId,
+                        channelId: channelId,
+                        guildName: guildName,
+                        isPremium: isPremium,
+                        premiumExpires: premiumExpires
+                    }];
         }
     });
 }); };
-exports.getInteractionCreateVariables = getInteractionCreateVariables;
+exports.getInteractionCreateVars = getInteractionCreateVars;
 var isRegularMessage = function (content) {
     return content.author.bot || !content.content.trim().startsWith('Wordle ');
 };

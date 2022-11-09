@@ -21,10 +21,9 @@ import {
   updateGuildUserData,
 } from './firebase/firebaseQueries';
 
-export const getMessageCreateVariables = async (content: Message) => {
+export const getMessageCreateVars = async (content: Message) => {
   const { guildId } = content as DiscordIds;
   const { id, username } = content.author;
-
   const { notifications, isPremium, premiumExpires, users, serverCount } =
     await getGuildData(guildId);
 
@@ -33,18 +32,16 @@ export const getMessageCreateVariables = async (content: Message) => {
   const newWordleUser = users.filter((user) => user.userId === id).length === 0;
   const serverLimitReached = userLimit && !premium && newWordleUser;
 
-  const data = {
+  return {
     guildId,
     id,
     username,
     notifications,
     serverLimitReached,
   };
-
-  return data;
 };
 
-export const getInteractionCreateVariables = async (
+export const getInteractionCreateVars = async (
   interaction: CommandInteraction,
 ) => {
   const serverOwnerId = interaction.guild?.ownerId;
@@ -65,7 +62,7 @@ export const getInteractionCreateVariables = async (
 
   const hasValidPermissions = isAdmin || serverOwner;
 
-  const data = {
+  return {
     hasValidPermissions,
     commandName,
     userId,
@@ -75,8 +72,6 @@ export const getInteractionCreateVariables = async (
     isPremium,
     premiumExpires,
   };
-
-  return data;
 };
 
 export const isRegularMessage = (content: Message) =>

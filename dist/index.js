@@ -44,8 +44,8 @@ var discord_js_1 = require("discord.js");
 var dotenv_1 = __importDefault(require("dotenv"));
 var commands_1 = __importDefault(require("./commands"));
 var embeds_1 = require("./embeds");
-var constants_1 = require("./util/constants");
 var botFunctions_1 = require("./util/botFunctions");
+var constants_1 = require("./util/constants");
 var firebaseQueries_1 = require("./util/firebase/firebaseQueries");
 dotenv_1["default"].config();
 var client = new discord_js_1.Client({
@@ -85,11 +85,11 @@ client.on('guildDelete', function (guild) { return __awaiter(void 0, void 0, voi
     });
 }); });
 client.on('messageCreate', function (content) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, guildId, channelId, isWordleChannel, _b, guildId_1, id, username, notifications, serverLimitReached, wordles, leaderboards, wordleNumber, _c, isValid, score, _d, completed, total, userData, leaderboardData, _e, newData, newAchievements, error_1;
+    var time, _a, guildId, channelId, isWordleChannel, _b, guildId_1, id, username, notifications, serverLimitReached, wordles, leaderboards, wordleNumber, _c, isValid, score, _d, completed, total, userData, leaderboardData, _e, newData, newAchievements, error_1;
     return __generator(this, function (_f) {
         switch (_f.label) {
             case 0:
-                console.log('message created');
+                time = new Date().getTime();
                 _a = content, guildId = _a.guildId, channelId = _a.channelId;
                 return [4 /*yield*/, (0, firebaseQueries_1.getGuildWordleChannel)(guildId, channelId)];
             case 1:
@@ -99,7 +99,7 @@ client.on('messageCreate', function (content) { return __awaiter(void 0, void 0,
                 _f.label = 2;
             case 2:
                 _f.trys.push([2, 18, , 20]);
-                return [4 /*yield*/, (0, botFunctions_1.getMessageCreateVariables)(content)];
+                return [4 /*yield*/, (0, botFunctions_1.getMessageCreateVars)(content)];
             case 3:
                 _b = _f.sent(), guildId_1 = _b.guildId, id = _b.id, username = _b.username, notifications = _b.notifications, serverLimitReached = _b.serverLimitReached;
                 if (!serverLimitReached) return [3 /*break*/, 6];
@@ -137,6 +137,7 @@ client.on('messageCreate', function (content) { return __awaiter(void 0, void 0,
                 })];
             case 11:
                 _e = _f.sent(), newData = _e.userData, newAchievements = _e.newAchievements;
+                // Update the leaderboard data
                 return [4 /*yield*/, (0, botFunctions_1.updateLeaderboardData)({
                         username: username,
                         data: leaderboardData,
@@ -146,6 +147,7 @@ client.on('messageCreate', function (content) { return __awaiter(void 0, void 0,
                         guildId: guildId_1
                     })];
             case 12:
+                // Update the leaderboard data
                 _f.sent();
                 if (!(newAchievements.length && notifications['achievements'] === true)) return [3 /*break*/, 14];
                 return [4 /*yield*/, content.reply({
@@ -154,14 +156,20 @@ client.on('messageCreate', function (content) { return __awaiter(void 0, void 0,
             case 13:
                 _f.sent();
                 _f.label = 14;
-            case 14: return [3 /*break*/, 17];
-            case 15: return [4 /*yield*/, content.reply(constants_1.INVALID_SCORE_TEXT)];
+            case 14:
+                console.log("MESSAGE: Time taken: ".concat(new Date().getTime() - time, "ms"));
+                return [3 /*break*/, 17];
+            case 15:
+                // If the user tries to submit an invalid score, return an error message
+                console.log("MESSAGE: Time taken: ".concat(new Date().getTime() - time, "ms"));
+                return [4 /*yield*/, content.reply(constants_1.INVALID_SCORE_TEXT)];
             case 16:
                 _f.sent();
                 _f.label = 17;
             case 17: return [3 /*break*/, 20];
             case 18:
                 error_1 = _f.sent();
+                console.log("MESSAGE: Time taken: ".concat(new Date().getTime() - time, "ms"));
                 return [4 /*yield*/, content.reply(constants_1.SOMETHING_WENT_WRONG_TEXT)];
             case 19:
                 _f.sent();
@@ -172,18 +180,19 @@ client.on('messageCreate', function (content) { return __awaiter(void 0, void 0,
     });
 }); });
 client.on('interactionCreate', function (interaction) { return __awaiter(void 0, void 0, void 0, function () {
-    var command, _a, hasValidPermissions, commandName, userId, guildId, channelId, guildName, isPremium, premiumExpires, role, member, count, option, option, data, stats, data, option, wordles, leaderboard, error_2;
+    var time, command, _a, hasValidPermissions, commandName, userId, guildId, channelId, guildName, isPremium, premiumExpires, role, member, count, option, option, data, stats, data, option, wordles, leaderboard, error_2;
     var _b, _c, _d, _e, _f;
     return __generator(this, function (_g) {
         switch (_g.label) {
             case 0:
+                time = new Date().getTime();
                 command = interaction.isChatInputCommand();
                 if (!command)
                     return [2 /*return*/];
                 _g.label = 1;
             case 1:
                 _g.trys.push([1, 64, , 66]);
-                return [4 /*yield*/, (0, botFunctions_1.getInteractionCreateVariables)(interaction)];
+                return [4 /*yield*/, (0, botFunctions_1.getInteractionCreateVars)(interaction)];
             case 2:
                 _a = _g.sent(), hasValidPermissions = _a.hasValidPermissions, commandName = _a.commandName, userId = _a.userId, guildId = _a.guildId, channelId = _a.channelId, guildName = _a.guildName, isPremium = _a.isPremium, premiumExpires = _a.premiumExpires;
                 if (!(commandName === 'set-channel')) return [3 /*break*/, 7];
@@ -422,7 +431,9 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
             case 62:
                 _g.sent();
                 _g.label = 63;
-            case 63: return [3 /*break*/, 66];
+            case 63:
+                console.log("COMMAND: Time taken: ".concat(new Date().getTime() - time, "ms"));
+                return [3 /*break*/, 66];
             case 64:
                 error_2 = _g.sent();
                 return [4 /*yield*/, interaction.reply({

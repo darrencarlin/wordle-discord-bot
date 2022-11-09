@@ -6,11 +6,9 @@ import { User } from '../types';
 export const getGuildData = async (id: string) => {
   const guild = await db.collection('guilds').doc(id).get();
   const guildData = guild.data();
-
   const users = await db.collection(`guilds/${id}/users`).get();
   const usersData = users.docs.map((doc) => doc.data());
   const serverCount = users.docs.length;
-
   const leaderboards = await db.collection(`guilds/${id}/leaderboard`).get();
   const leaderboardsData = leaderboards.docs.map((doc) => doc.data());
 

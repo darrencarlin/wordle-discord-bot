@@ -27,15 +27,17 @@ It store the users scores and stats using Google Firestore with the following sc
     bestScore: 0,
     scores: [0, 0, 0, 0, 0, 0],
     achievements: [{id: 1, name: "First Wordle", description: "You completed your first wordle"}],
+    lastGameNumber: 0,
   },
 ];
 
 ```
 
-Each guild has it's own users collection in the database. which follows the below schema
+Each guild has it's own users and leaderboards collection in the database. which follows the below schema. They are tracked separately to allow leaderboards to be reset without affecting user stats.
 
 ```
 {
+  leaderboards: [User, User, User]
   users: [User, User, User],
   channelId: "123456789",
   guildId: "123456789",
@@ -45,12 +47,22 @@ Each guild has it's own users collection in the database. which follows the belo
 
 ## Slash Commands
 
-The bot currently has 4 slash commands.
+The bot currently has 14 slash commands.
 
 - /set-channel
+- /set-role
+- /purge-user
+- /reset-users
+- /reset-leaderboard
+- /server-status
+- /upgrade-server
+- /enable-notifications
+- /disable-notifications
+- /my-stats
+- /my-achievements
 - /leaderboard
-- /stats
-- /achievements
+- /help
+- /export-data
 
 /set-channel sets the channel to track wordle entries in. It will only track entries in this channel.
 
@@ -68,7 +80,8 @@ The bot currently has 4 slash commands.
 
 ## Planned/Potential New Features
 
-- Purge a users data
+- Global leaderboards
+- ~~Purge a users data~~
 - Better leaderboard sorting (Joint positioning)
 - ~~Stop users from entering the same wordle twice~~
 - ~~Allow ephemeral stats~~

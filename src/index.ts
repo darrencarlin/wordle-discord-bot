@@ -17,6 +17,19 @@ import {
 } from './embeds';
 
 import {
+  generateLeaderboard,
+  generateUserStats,
+  getInteractionCreateVars,
+  getMessageCreateVars,
+  getUserLeaderboardData,
+  getUserWordleData,
+  getWordleNumber,
+  isRegularMessage,
+  isValidWordleScore,
+  updateLeaderboardData,
+  updateUserData,
+} from './util/botFunctions';
+import {
   COMPLETED_ALREADY_TEXT,
   EXPORT_DATA_TEXT,
   INVALID_SCORE_TEXT,
@@ -28,19 +41,6 @@ import {
   SOMETHING_WENT_WRONG_TEXT,
   UPGRADE_SERVER,
 } from './util/constants';
-import {
-  generateLeaderboard,
-  generateUserStats,
-  getUserLeaderboardData,
-  getUserWordleData,
-  getMessageCreateVariables,
-  getWordleNumber,
-  isRegularMessage,
-  isValidWordleScore,
-  updateLeaderboardData,
-  updateUserData,
-  getInteractionCreateVariables,
-} from './util/botFunctions';
 import {
   createGuild,
   deleteGuild,
@@ -87,15 +87,17 @@ client.on('guildDelete', async (guild) => {
 });
 
 client.on('messageCreate', async (content: Message) => {
-  console.log('message created');
+  const time = new Date().getTime();
+  // Guards to prevent querying the database more than needed
   const { guildId, channelId } = content as DiscordIds;
   const isWordleChannel = await getGuildWordleChannel(guildId, channelId);
   if (isRegularMessage(content) || !isWordleChannel) return;
 
   try {
     const { guildId, id, username, notifications, serverLimitReached } =
-      await getMessageCreateVariables(content);
+      await getMessageCreateVars(content);
 
+    // check if server has reached user limit
     if (serverLimitReached) {
       if (notifications['limits']) {
         await content.reply({ content: LIMIT_REACHED });
@@ -130,6 +132,7 @@ client.on('messageCreate', async (content: Message) => {
         return;
       }
 
+      // Update the user data
       const { userData: newData, newAchievements } = await updateUserData({
         username,
         data: userData,
@@ -140,6 +143,7 @@ client.on('messageCreate', async (content: Message) => {
         id,
       });
 
+      // Update the leaderboard data
       await updateLeaderboardData({
         username,
         data: leaderboardData,
@@ -149,21 +153,28 @@ client.on('messageCreate', async (content: Message) => {
         guildId,
       });
 
+      // If the user has new achievements, send them a message if notifications are enabled
       if (newAchievements.length && notifications['achievements'] === true) {
         await content.reply({
           embeds: [achievementsEmbed(newData, newAchievements)],
         });
       }
+
+      console.log(`MESSAGE: Time taken: ${new Date().getTime() - time}ms`);
     } else {
+      // If the user tries to submit an invalid score, return an error message
+      console.log(`MESSAGE: Time taken: ${new Date().getTime() - time}ms`);
       await content.reply(INVALID_SCORE_TEXT);
     }
   } catch (error) {
+    console.log(`MESSAGE: Time taken: ${new Date().getTime() - time}ms`);
     await content.reply(SOMETHING_WENT_WRONG_TEXT);
     logError((error as Error).message, 'messageCreate');
   }
 });
 
 client.on('interactionCreate', async (interaction: Interaction) => {
+  const time = new Date().getTime();
   const command = interaction.isChatInputCommand();
 
   if (!command) return;
@@ -178,7 +189,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
       guildName,
       isPremium,
       premiumExpires,
-    } = await getInteractionCreateVariables(interaction);
+    } = await getInteractionCreateVars(interaction);
 
     if (commandName === 'set-channel') {
       if (guildId && channelId) {
@@ -362,6 +373,8 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         });
       }
     }
+
+    console.log(`COMMAND: Time taken: ${new Date().getTime() - time}ms`);
   } catch (error) {
     await interaction.reply({
       content: SOMETHING_WENT_WRONG_TEXT,
@@ -370,6 +383,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     logError((error as Error).message, 'interactionCreate');
   }
 });
+
 (async () => {
   try {
     await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
