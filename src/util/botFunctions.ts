@@ -285,8 +285,7 @@ export const calculateBestScore = (completed: string, userData: User) => {
     userData.bestScore = Number(completed);
   }
 
-  // update the scores array
-  if (isNaN(Number(completed))) {
+  if (Number(completed)) {
     userData.scores[Number(completed) - 1]++;
   }
 
