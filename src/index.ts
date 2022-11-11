@@ -189,6 +189,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
       guildName,
       isPremium,
       premiumExpires,
+      notifications,
     } = await getInteractionCreateVars(interaction);
 
     if (commandName === 'set-channel') {
@@ -260,7 +261,9 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         const count = await getUserCount(guildId as string);
 
         await interaction.reply({
-          embeds: [serverStatusEmbed(count, isPremium, premiumExpires)],
+          embeds: [
+            serverStatusEmbed(count, isPremium, premiumExpires, notifications),
+          ],
           ephemeral: true,
         });
       } else {

@@ -18,7 +18,7 @@ export const getGuildData = async (id: string) => {
     guildId: guildData?.guildId,
     isPremium: guildData?.isPremium,
     name: guildData?.name,
-    notifications: { ...guildData?.notifications, ...DEFAULT_NOTIFICATIONS },
+    notifications: guildData?.notifications,
     premiumExpires: guildData?.premiumExpires,
     users: usersData as User[],
     leaderboards: leaderboardsData as User[],
