@@ -22,6 +22,7 @@ export const getGuildData = async (id: string) => {
     premiumExpires: guildData?.premiumExpires,
     users: usersData as User[],
     leaderboards: leaderboardsData as User[],
+    isActive: guildData?.isActive ?? false,
     serverCount,
   };
 

@@ -51,9 +51,8 @@ export const getInteractionCreateVars = async (
   const channelId = interaction.channelId;
   const guildName = interaction.guild?.name as string;
 
-  const { isPremium, premiumExpires, notifications } = await getGuildData(
-    guildId,
-  );
+  const { isPremium, premiumExpires, notifications, isActive } =
+    await getGuildData(guildId);
 
   const adminRoleId = await getAdminRoleId(guildId ?? '');
   const isAdmin = (
@@ -74,6 +73,7 @@ export const getInteractionCreateVars = async (
     isPremium,
     premiumExpires,
     notifications,
+    isActive,
   };
 };
 

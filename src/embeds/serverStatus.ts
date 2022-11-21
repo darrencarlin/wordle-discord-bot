@@ -9,6 +9,7 @@ const serverStatusEmbed = (
   isPremium: boolean,
   premiumExpires: number,
   notifications: Notifications,
+  isActive: boolean,
 ) => {
   const embed = new EmbedBuilder()
     .setColor(0x0099ff)
@@ -26,7 +27,7 @@ const serverStatusEmbed = (
       }`,
     })
     .addFields({
-      name: 'Premium Expires: ',
+      name: isActive ? 'Premium Renews: ' : 'Premium Expires: ',
       value:
         premiumExpires === 0 ? 'Never' : new Date(premiumExpires).toUTCString(),
     });
