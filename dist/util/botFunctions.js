@@ -77,7 +77,7 @@ var getMessageCreateVars = function (content) { return __awaiter(void 0, void 0,
 }); };
 exports.getMessageCreateVars = getMessageCreateVars;
 var getInteractionCreateVars = function (interaction) { return __awaiter(void 0, void 0, void 0, function () {
-    var serverOwnerId, commandName, userId, guildId, channelId, guildName, _a, isPremium, premiumExpires, adminRoleId, isAdmin, serverOwner, hasValidPermissions;
+    var serverOwnerId, commandName, userId, guildId, channelId, guildName, _a, isPremium, premiumExpires, notifications, isActive, adminRoleId, isAdmin, serverOwner, hasValidPermissions;
     var _b, _c, _d;
     return __generator(this, function (_e) {
         switch (_e.label) {
@@ -90,7 +90,7 @@ var getInteractionCreateVars = function (interaction) { return __awaiter(void 0,
                 guildName = (_c = interaction.guild) === null || _c === void 0 ? void 0 : _c.name;
                 return [4 /*yield*/, (0, firebaseQueries_1.getGuildData)(guildId)];
             case 1:
-                _a = _e.sent(), isPremium = _a.isPremium, premiumExpires = _a.premiumExpires;
+                _a = _e.sent(), isPremium = _a.isPremium, premiumExpires = _a.premiumExpires, notifications = _a.notifications, isActive = _a.isActive;
                 return [4 /*yield*/, (0, firebaseQueries_1.getAdminRoleId)(guildId !== null && guildId !== void 0 ? guildId : '')];
             case 2:
                 adminRoleId = _e.sent();
@@ -105,7 +105,9 @@ var getInteractionCreateVars = function (interaction) { return __awaiter(void 0,
                         channelId: channelId,
                         guildName: guildName,
                         isPremium: isPremium,
-                        premiumExpires: premiumExpires
+                        premiumExpires: premiumExpires,
+                        notifications: notifications,
+                        isActive: isActive
                     }];
         }
     });

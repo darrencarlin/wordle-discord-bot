@@ -53,20 +53,21 @@ var constants_1 = require("../constants");
 // potentially add an option to choose what you need... minimzing calls to db
 var getGuildData = function (id) { return __awaiter(void 0, void 0, void 0, function () {
     var guild, guildData, users, usersData, serverCount, leaderboards, leaderboardsData, data;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0: return [4 /*yield*/, firebaseAdmin_1.db.collection('guilds').doc(id).get()];
             case 1:
-                guild = _a.sent();
+                guild = _b.sent();
                 guildData = guild.data();
                 return [4 /*yield*/, firebaseAdmin_1.db.collection("guilds/".concat(id, "/users")).get()];
             case 2:
-                users = _a.sent();
+                users = _b.sent();
                 usersData = users.docs.map(function (doc) { return doc.data(); });
                 serverCount = users.docs.length;
                 return [4 /*yield*/, firebaseAdmin_1.db.collection("guilds/".concat(id, "/leaderboard")).get()];
             case 3:
-                leaderboards = _a.sent();
+                leaderboards = _b.sent();
                 leaderboardsData = leaderboards.docs.map(function (doc) { return doc.data(); });
                 data = {
                     adminRoleId: guildData === null || guildData === void 0 ? void 0 : guildData.adminRoleId,
@@ -74,10 +75,11 @@ var getGuildData = function (id) { return __awaiter(void 0, void 0, void 0, func
                     guildId: guildData === null || guildData === void 0 ? void 0 : guildData.guildId,
                     isPremium: guildData === null || guildData === void 0 ? void 0 : guildData.isPremium,
                     name: guildData === null || guildData === void 0 ? void 0 : guildData.name,
-                    notifications: __assign(__assign({}, guildData === null || guildData === void 0 ? void 0 : guildData.notifications), constants_1.DEFAULT_NOTIFICATIONS),
+                    notifications: guildData === null || guildData === void 0 ? void 0 : guildData.notifications,
                     premiumExpires: guildData === null || guildData === void 0 ? void 0 : guildData.premiumExpires,
                     users: usersData,
                     leaderboards: leaderboardsData,
+                    isActive: (_a = guildData === null || guildData === void 0 ? void 0 : guildData.isActive) !== null && _a !== void 0 ? _a : false,
                     serverCount: serverCount
                 };
                 return [2 /*return*/, data];

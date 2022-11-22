@@ -180,7 +180,7 @@ client.on('messageCreate', function (content) { return __awaiter(void 0, void 0,
     });
 }); });
 client.on('interactionCreate', function (interaction) { return __awaiter(void 0, void 0, void 0, function () {
-    var time, command, _a, hasValidPermissions, commandName, userId, guildId, channelId, guildName, isPremium, premiumExpires, role, member, count, option, option, data, stats, data, option, wordles, leaderboard, error_2;
+    var time, command, _a, hasValidPermissions, commandName, userId, guildId, channelId, guildName, isPremium, premiumExpires, notifications, isActive, role, member, count, option, option, data, stats, data, option, wordles, leaderboard, error_2;
     var _b, _c, _d, _e, _f;
     return __generator(this, function (_g) {
         switch (_g.label) {
@@ -194,7 +194,7 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
                 _g.trys.push([1, 64, , 66]);
                 return [4 /*yield*/, (0, botFunctions_1.getInteractionCreateVars)(interaction)];
             case 2:
-                _a = _g.sent(), hasValidPermissions = _a.hasValidPermissions, commandName = _a.commandName, userId = _a.userId, guildId = _a.guildId, channelId = _a.channelId, guildName = _a.guildName, isPremium = _a.isPremium, premiumExpires = _a.premiumExpires;
+                _a = _g.sent(), hasValidPermissions = _a.hasValidPermissions, commandName = _a.commandName, userId = _a.userId, guildId = _a.guildId, channelId = _a.channelId, guildName = _a.guildName, isPremium = _a.isPremium, premiumExpires = _a.premiumExpires, notifications = _a.notifications, isActive = _a.isActive;
                 if (!(commandName === 'set-channel')) return [3 /*break*/, 7];
                 if (!(guildId && channelId)) return [3 /*break*/, 5];
                 return [4 /*yield*/, (0, firebaseQueries_1.setWordleChannel)(guildId, channelId, guildName)];
@@ -287,7 +287,9 @@ client.on('interactionCreate', function (interaction) { return __awaiter(void 0,
             case 26:
                 count = _g.sent();
                 return [4 /*yield*/, interaction.reply({
-                        embeds: [(0, embeds_1.serverStatusEmbed)(count, isPremium, premiumExpires)],
+                        embeds: [
+                            (0, embeds_1.serverStatusEmbed)(count, isPremium, premiumExpires, notifications, isActive),
+                        ],
                         ephemeral: true
                     })];
             case 27:

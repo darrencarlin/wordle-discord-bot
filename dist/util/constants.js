@@ -187,7 +187,7 @@ exports.DEFAULT_NOTIFICATIONS = {
     limits: true
 };
 var EXPORT_DATA_TEXT = function (id) {
-    return "Follow this [link](https://wordlediscordbot.com/export/".concat(id, ") to get your servers current data in JSON format");
+    return "Follow this [link](https://wordle-discord-bot-fe.vercel.app/api/export/".concat(id, ") to get your servers current data in JSON format");
 };
 exports.EXPORT_DATA_TEXT = EXPORT_DATA_TEXT;
 exports.LIMIT_REACHED = "You've reached the limit for this server. Delete some users to allow more or consider upgrading to premium.";
@@ -243,7 +243,7 @@ exports.COMMANDS = [
         permissions: 'admin'
     },
     {
-        name: 'User Count ```/server-status```',
+        name: 'Server Status ```/server-status```',
         description: 'Shows the current status of the server',
         permissions: 'admin'
     },
@@ -253,12 +253,12 @@ exports.COMMANDS = [
         permissions: 'admin'
     },
     {
-        name: "Enable Notifications ```/enable-notifications <'all', 'achievements', 'limits'>```",
+        name: "Enable Notifications ```/enable-notifications <'achievements', 'limits'>```",
         description: 'Enable notifications for all, achievements, or limits',
         permissions: 'admin'
     },
     {
-        name: "Disable Notifications ```/disable-notifications <'all', 'achievements', 'limits'>```",
+        name: "Disable Notifications ```/disable-notifications <'achievements', 'limits'>```",
         description: 'Disable notifications for all, achievements, or limits',
         permissions: 'admin'
     },

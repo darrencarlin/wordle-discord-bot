@@ -190,6 +190,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
       isPremium,
       premiumExpires,
       notifications,
+      isActive,
     } = await getInteractionCreateVars(interaction);
 
     if (commandName === 'set-channel') {
@@ -262,7 +263,13 @@ client.on('interactionCreate', async (interaction: Interaction) => {
 
         await interaction.reply({
           embeds: [
-            serverStatusEmbed(count, isPremium, premiumExpires, notifications),
+            serverStatusEmbed(
+              count,
+              isPremium,
+              premiumExpires,
+              notifications,
+              isActive,
+            ),
           ],
           ephemeral: true,
         });
