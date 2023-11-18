@@ -61,6 +61,7 @@ The bot currently has 14 slash commands.
 - /my-stats
 - /my-achievements
 - /leaderboard
+- /simple-leaderboard
 - /help
 - /export-data
 

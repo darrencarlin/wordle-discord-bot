@@ -1,4 +1,5 @@
 import leaderboardCommand from './leaderboard';
+import simpleLeaderboard from './simple-leaderboard';
 import setChannelCommand from './set-channel';
 import myStatsCommand from './my-stats';
 import myAchievementsCommand from './my-achievements';
@@ -15,6 +16,7 @@ import exportDataCommand from './export-data';
 
 export default [
   leaderboardCommand,
+  simpleLeaderboard,
   setChannelCommand,
   myStatsCommand,
   myAchievementsCommand,

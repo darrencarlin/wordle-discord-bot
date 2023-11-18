@@ -97,5 +97,6 @@ export type Command =
   | 'my-stats'
   | 'my-achievements'
   | 'leaderboard'
+  | 'simple-leaderboard'
   | 'help'
   | 'export-data';

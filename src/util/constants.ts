@@ -180,7 +180,7 @@ export const DEFAULT_NOTIFICATIONS = {
 };
 
 export const EXPORT_DATA_TEXT = (id: string) =>
-  `Follow this [link](https://wordle-discord-bot-fe.vercel.app/api/export/${id}) to get your servers current data in JSON format`;
+  `Follow this [link](https://wordlediscordbot.com/api/export/${id}) to get your servers current data in JSON format`;
 
 export const LIMIT_REACHED =
   "You've reached the limit for this server. Delete some users to allow more or consider upgrading to premium.";
@@ -276,6 +276,11 @@ export const COMMANDS = [
   {
     name: 'Leaderboard ```/leaderboard```',
     description: 'Shows the leaderboard',
+    permissions: 'all',
+  },
+  {
+    name: 'Simple Leaderboard ```/simple-leaderboard```',
+    description: 'Shows the simple leaderboard',
     permissions: 'all',
   },
   {

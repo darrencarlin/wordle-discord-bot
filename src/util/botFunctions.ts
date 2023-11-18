@@ -185,6 +185,24 @@ export const generateLeaderboard = (wordles: User[], option: string) => {
   return str;
 };
 
+export const generateSimpleLeaderboard = (wordles: User[], option: string) => {
+  const leaderboard = sortLeaderboard(wordles, option);
+
+  let str = '```';
+
+  leaderboard?.forEach((user, index) => {
+    str += `${index + 1}. ${user.usernames[0]} \n`;
+  });
+
+  str += '```';
+
+  if (str === '``````') {
+    return NO_LEADERBOARD_DATA;
+  }
+
+  return str;
+};
+
 export const generateUserStats = (data: User) => {
   const stats = [];
 

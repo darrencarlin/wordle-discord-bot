@@ -18,6 +18,7 @@ import {
 
 import {
   generateLeaderboard,
+  generateSimpleLeaderboard,
   generateUserStats,
   getInteractionCreateVars,
   getMessageCreateVars,
@@ -361,6 +362,13 @@ client.on('interactionCreate', async (interaction: Interaction) => {
       const wordles = await getGuildLeaderboard(guildId as string);
       const leaderboard = generateLeaderboard(wordles, option);
       await interaction.reply(leaderboard);
+    }
+
+    if (commandName === 'simple-leaderboard') {
+      const option = interaction.options.getString('sort') ?? '';
+      const wordles = await getGuildLeaderboard(guildId as string);
+      const simpleLeaderboard = generateSimpleLeaderboard(wordles, option);
+      await interaction.reply(simpleLeaderboard);
     }
 
     if (commandName === 'help') {
