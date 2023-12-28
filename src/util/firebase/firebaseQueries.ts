@@ -212,3 +212,65 @@ export const incrementWordlesEntered = async () => {
     .doc('LUv3w892t28Vxkf3djha')
     .set({ count: count + 1 }, { merge: true });
 };
+
+interface Field {
+  name: string;
+  value: string | number | boolean;
+}
+export const addNewFieldToUsersAndLeaderboards = async ({
+  name,
+  value,
+}: Field) => {
+  // Get a snapshot of all guilds
+  const guildsSnapshot = await db.collection('guilds').get();
+
+  // Iterate over each guild and update users and leaderboards
+  guildsSnapshot.forEach(async (guild) => {
+    const guildId = guild.id;
+
+    // Create a batched write for efficient multiple operations
+    const batch = db.batch();
+
+    // Function to update users and leaderboards for a specific guild
+    const updateUsersAndLeaderboards = async () => {
+      // Get snapshots of users and leaderboards for the current guild
+      const usersSnapshot = await db
+        .collection(`guilds/${guildId}/users`)
+        .get();
+      const leaderboardsSnapshot = await db
+        .collection(`guilds/${guildId}/leaderboard`)
+        .get();
+
+      // Update each user with the new field
+      usersSnapshot.forEach((user) => {
+        const userId = user.id;
+        const userData = user.data();
+
+        // Create a reference to the user document and add it to the batch
+        const userRef = db.collection(`guilds/${guildId}/users`).doc(userId);
+        batch.set(userRef, { ...userData, [name]: value }, { merge: true });
+      });
+
+      // Update each leaderboard entry with the new field
+      leaderboardsSnapshot.forEach((user) => {
+        const userId = user.id;
+        const userData = user.data();
+
+        // Create a reference to the leaderboard document and add it to the batch
+        const leaderboardRef = db
+          .collection(`guilds/${guildId}/leaderboard`)
+          .doc(userId);
+        batch.set(
+          leaderboardRef,
+          { ...userData, [name]: value },
+          { merge: true },
+        );
+      });
+    };
+
+    // Execute the batched write to update users and leaderboards for the current guild
+    await updateUsersAndLeaderboards();
+    // Commit the batch for the current guild
+    await batch.commit();
+  });
+};

@@ -181,7 +181,7 @@ export const generateLeaderboard = (wordles: User[], option: string) => {
     str += `#${index + 1}. ${user.usernames[0]} - ${user.totalWordles} games (${
       user.percentageCompleted
     }% completed) / ${
-      user.hardWordlesCompleted ?? 0
+      user.hardWordlesCompleted
     } hard games completed / average ${
       user.averageGuesses
     } guesses per game. / current streak: ${user.currentStreak} / best score: ${
@@ -234,7 +234,7 @@ export const generateSimpleLeaderboard = (wordles: User[], option: string) => {
     str += `${index + 1}. ${user.usernames[0]} `;
 
     if (extra != '') {
-      const value = user[option as keyof User] ?? 0;
+      const value = user[option as keyof User];
       str += `- ${value}${extra}\n`;
     }
   });
@@ -290,7 +290,7 @@ export const calculateUpdatedWordleData = (
   // If the user completed the wordle
   if (Number(completed) <= Number(total)) {
     // defaulting to zero - this will catch new users because we added this field later
-    const hardWordlesCompleted = userData.hardWordlesCompleted ?? 0;
+    const hardWordlesCompleted = userData.hardWordlesCompleted;
 
     userData.wordlesCompleted++;
     userData.totalWordles++;
