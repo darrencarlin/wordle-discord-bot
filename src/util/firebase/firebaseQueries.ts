@@ -202,3 +202,13 @@ export const getAdminRoleId = async (id: string) => {
   const guild = await db.collection('guilds').doc(id).get();
   return guild.data()?.adminRoleId;
 };
+
+export const incrementWordlesEntered = async () => {
+  const total = await db.collection('total').doc('LUv3w892t28Vxkf3djha').get();
+  const totalData = total.data();
+  const count = totalData?.count;
+  await db
+    .collection('total')
+    .doc('LUv3w892t28Vxkf3djha')
+    .set({ count: count + 1 }, { merge: true });
+};

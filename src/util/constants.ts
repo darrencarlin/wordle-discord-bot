@@ -104,6 +104,42 @@ export const POPULATE_USER = (user: User | NewUser): User => {
       description: "You've completed all the achievements!",
       complete: false,
     },
+    {
+      id: 18,
+      name: 'Hard mode',
+      description: 'Complete a hard mode wordle',
+      complete: false,
+    },
+    {
+      id: 19,
+      name: 'Hard mode',
+      description: 'Complete 5 hard mode wordles',
+      complete: false,
+    },
+    {
+      id: 20,
+      name: 'Hard mode',
+      description: 'Complete 10 hard mode wordles',
+      complete: false,
+    },
+    {
+      id: 21,
+      name: 'Hard mode',
+      description: 'Complete 25 hard mode wordles',
+      complete: false,
+    },
+    {
+      id: 22,
+      name: 'Hard mode',
+      description: 'Complete 50 hard mode wordles',
+      complete: false,
+    },
+    {
+      id: 23,
+      name: 'Hard mode',
+      description: 'Complete 100 hard mode wordles',
+      complete: false,
+    },
   ];
 
   const USER: User = {
@@ -112,6 +148,7 @@ export const POPULATE_USER = (user: User | NewUser): User => {
     wordlesCompleted: 0,
     wordlesFailed: 0,
     totalWordles: 0,
+    hardWordlesCompleted: 0,
     percentageCompleted: 0,
     percentageFailed: 0,
     completionGuesses: [],
@@ -150,6 +187,7 @@ export const POPULATE_USER = (user: User | NewUser): User => {
       wordlesCompleted: user.wordlesCompleted,
       wordlesFailed: user.wordlesFailed,
       totalWordles: user.totalWordles,
+      hardWordlesCompleted: user.hardWordlesCompleted,
       percentageCompleted: user.percentageCompleted,
       percentageFailed: user.percentageFailed,
       completionGuesses: user.completionGuesses,

@@ -115,7 +115,10 @@ export const getUserLeaderboardData = (
 };
 
 export const isValidWordleScore = (content: Message) => {
-  const firstLine = content.content.split('\n')[0];
+  // Get the first line of the message and remove the asterisk if present
+  const firstLine = content.content.split('\n')[0].replace('*', '');
+  // Check if it's hard mode
+  const isHardMode = content.content.includes('*');
   // Get the score
   const score = firstLine.substring(firstLine.length - 3);
   // Regex to test score
@@ -123,7 +126,7 @@ export const isValidWordleScore = (content: Message) => {
   // Test it
   const isValid = regex.test(score);
 
-  return { isValid, score };
+  return { isValid, isHardMode, score };
 };
 
 export const sortLeaderboard = (wordles: User[], option: string) => {
@@ -140,6 +143,14 @@ export const sortLeaderboard = (wordles: User[], option: string) => {
       if (a[key] < b[key]) return oppositeSortOrder ? 1 : -1;
       return 0;
     });
+
+    if (option === 'hardWordlesCompleted') {
+      leaderboard = leaderboard.sort((a, b) => {
+        if (a.hardWordlesCompleted > b.hardWordlesCompleted) return 1;
+        if (a.hardWordlesCompleted < b.hardWordlesCompleted) return -1;
+        return 0;
+      });
+    }
 
     return leaderboard;
   }
@@ -169,7 +180,9 @@ export const generateLeaderboard = (wordles: User[], option: string) => {
   leaderboard?.forEach((user, index) => {
     str += `#${index + 1}. ${user.usernames[0]} - ${user.totalWordles} games (${
       user.percentageCompleted
-    }% completed) / average ${
+    }% completed) / ${
+      user.hardWordlesCompleted
+    } hard games completed / average ${
       user.averageGuesses
     } guesses per game. / current streak: ${user.currentStreak} / best score: ${
       user.bestScore
@@ -187,11 +200,43 @@ export const generateLeaderboard = (wordles: User[], option: string) => {
 
 export const generateSimpleLeaderboard = (wordles: User[], option: string) => {
   const leaderboard = sortLeaderboard(wordles, option);
+  let extra: string;
+  switch (option) {
+    case 'averageGuesses':
+      extra = ' guesses per game';
+      break;
+    case 'currentStreak':
+      extra = ' current streak';
+      break;
+    case 'bestScore':
+      extra = ' best score';
+      break;
+    case 'totalWordles':
+      extra = ' total wordles';
+      break;
+    case 'hardWordlesCompleted':
+      extra = ' hard wordles completed';
+      break;
+    case 'wordlesCompleted':
+      extra = ' wordles completed';
+      break;
+    case 'wordlesFailed':
+      extra = ' wordles failed';
+      break;
+    default:
+      extra = '';
+      break;
+  }
 
   let str = '```';
 
   leaderboard?.forEach((user, index) => {
-    str += `${index + 1}. ${user.usernames[0]} \n`;
+    str += `${index + 1}. ${user.usernames[0]} `;
+
+    if (extra != '') {
+      const value = user[option as keyof User];
+      str += `- ${value}${extra}\n`;
+    }
   });
 
   str += '```';
@@ -239,12 +284,16 @@ export const checkForNewUsername = (username: string, userData: User) => {
 export const calculateUpdatedWordleData = (
   completed: string,
   total: string,
+  isHardMode: boolean,
   userData: User,
 ) => {
   // If the user completed the wordle
   if (Number(completed) <= Number(total)) {
     userData.wordlesCompleted++;
     userData.totalWordles++;
+    userData.hardWordlesCompleted = isHardMode
+      ? userData.hardWordlesCompleted + 1
+      : userData.hardWordlesCompleted;
     userData.completionGuesses.push(Number(completed));
     userData.averageGuesses = Math.round(
       userData.completionGuesses.reduce((a, b) => a + b) /
@@ -343,13 +392,14 @@ export const updateUserData = async ({
   data,
   completed,
   total,
+  isHardMode,
   wordleNumber,
   guildId,
   id,
 }: UpdateUserDataProps) => {
   // Update the user data
   data = checkForNewUsername(username, data);
-  data = calculateUpdatedWordleData(completed, total, data);
+  data = calculateUpdatedWordleData(completed, total, isHardMode, data);
   data = calculateStreak(completed, data, wordleNumber);
   data = calculateBestScore(completed, data);
   const { userData, newAchievements } = calculateAchievements(data);
@@ -363,11 +413,12 @@ export const updateLeaderboardData = async ({
   data,
   completed,
   total,
+  isHardMode,
   wordleNumber,
   guildId,
 }: UpdateLeaderboardDataProps) => {
   data = checkForNewUsername(username, data);
-  data = calculateUpdatedWordleData(completed, total, data);
+  data = calculateUpdatedWordleData(completed, total, isHardMode, data);
   data = calculateStreak(completed, data, wordleNumber);
   data = calculateBestScore(completed, data);
   await updateGuildLeaderboardData(guildId, data);

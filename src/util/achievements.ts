@@ -230,4 +230,83 @@ export const achievementChecks = [
       return false;
     },
   },
+  // Hardmode Achievements
+  {
+    check: (userData: User) => {
+      if (
+        userData.hardWordlesCompleted >= 1 &&
+        userData.achievements.find(
+          (achievement) => achievement.id === 18 && !achievement.complete,
+        )
+      ) {
+        return true;
+      }
+      return false;
+    },
+  },
+  {
+    check: (userData: User) => {
+      if (
+        userData.hardWordlesCompleted >= 5 &&
+        userData.achievements.find(
+          (achievement) => achievement.id === 19 && !achievement.complete,
+        )
+      ) {
+        return true;
+      }
+      return false;
+    },
+  },
+  {
+    check: (userData: User) => {
+      if (
+        userData.hardWordlesCompleted >= 10 &&
+        userData.achievements.find(
+          (achievement) => achievement.id === 20 && !achievement.complete,
+        )
+      ) {
+        return true;
+      }
+      return false;
+    },
+  },
+  {
+    check: (userData: User) => {
+      if (
+        userData.hardWordlesCompleted >= 25 &&
+        userData.achievements.find(
+          (achievement) => achievement.id === 21 && !achievement.complete,
+        )
+      ) {
+        return true;
+      }
+      return false;
+    },
+  },
+  {
+    check: (userData: User) => {
+      if (
+        userData.hardWordlesCompleted >= 50 &&
+        userData.achievements.find(
+          (achievement) => achievement.id === 22 && !achievement.complete,
+        )
+      ) {
+        return true;
+      }
+      return false;
+    },
+  },
+  {
+    check: (userData: User) => {
+      if (
+        userData.hardWordlesCompleted >= 100 &&
+        userData.achievements.find(
+          (achievement) => achievement.id === 23 && !achievement.complete,
+        )
+      ) {
+        return true;
+      }
+      return false;
+    },
+  },
 ];

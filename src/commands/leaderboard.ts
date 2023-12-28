@@ -14,6 +14,7 @@ const leaderboardCommand = new SlashCommandBuilder()
         { name: 'Best score', value: 'bestScore' },
         { name: 'Total wordles ', value: 'totalWordles' },
         { name: 'Wordles Completed', value: 'wordlesCompleted' },
+        { name: 'Hard Mode Wordles Completed', value: 'hardWordlesCompleted' },
         { name: 'Wordles Failed', value: 'wordlesFailed' },
       ),
   )

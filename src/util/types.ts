@@ -18,6 +18,7 @@ export interface User {
   wordlesCompleted: number;
   wordlesFailed: number;
   totalWordles: number;
+  hardWordlesCompleted: number;
   percentageCompleted: number;
   percentageFailed: number;
   completionGuesses: number[];
@@ -59,6 +60,7 @@ export interface UpdateUserDataProps {
   data: User;
   completed: string;
   total: string;
+  isHardMode: boolean;
   wordleNumber: number;
   guildId: string;
   id: string;
@@ -69,6 +71,7 @@ export interface UpdateLeaderboardDataProps {
   data: User;
   completed: string;
   total: string;
+  isHardMode: boolean;
   wordleNumber: number;
   guildId: string;
 }

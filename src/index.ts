@@ -52,6 +52,7 @@ import {
   getGuildWordles,
   getUserCount,
   getWordle,
+  incrementWordlesEntered,
   logError,
   purgeUser,
   resetLeaderboard,
@@ -88,11 +89,15 @@ client.on('guildDelete', async (guild) => {
 });
 
 client.on('messageCreate', async (content: Message) => {
+  if (isRegularMessage(content)) {
+    // Return if the message is not a wordle message
+    return;
+  }
   const time = new Date().getTime();
-  // Guards to prevent querying the database more than needed
   const { guildId, channelId } = content as DiscordIds;
   const isWordleChannel = await getGuildWordleChannel(guildId, channelId);
-  if (isRegularMessage(content) || !isWordleChannel) return;
+
+  if (!isWordleChannel) return;
 
   try {
     const { guildId, id, username, notifications, serverLimitReached } =
@@ -111,7 +116,7 @@ client.on('messageCreate', async (content: Message) => {
     const leaderboards = await getGuildLeaderboard(guildId);
     const wordleNumber = getWordleNumber(content)!;
 
-    const { isValid, score } = isValidWordleScore(content);
+    const { isValid, isHardMode, score } = isValidWordleScore(content);
 
     if (isValid) {
       const [completed, total] = score.split('/');
@@ -139,6 +144,7 @@ client.on('messageCreate', async (content: Message) => {
         data: userData,
         completed,
         total,
+        isHardMode,
         wordleNumber,
         guildId,
         id,
@@ -150,6 +156,7 @@ client.on('messageCreate', async (content: Message) => {
         data: leaderboardData,
         completed,
         total,
+        isHardMode,
         wordleNumber,
         guildId,
       });
@@ -160,6 +167,8 @@ client.on('messageCreate', async (content: Message) => {
           embeds: [achievementsEmbed(newData, newAchievements)],
         });
       }
+
+      await incrementWordlesEntered();
 
       console.log(`MESSAGE: Time taken: ${new Date().getTime() - time}ms`);
     } else {
@@ -407,6 +416,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
       body: commands,
     });
+
     client.login(process.env.DISCORD_TOKEN);
   } catch (error) {
     logError((error as Error).message, 'applicationCommands');

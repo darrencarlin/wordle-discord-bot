@@ -13,6 +13,7 @@ const simpleLeaderboardCommand = new SlashCommandBuilder()
         { name: 'Current streak', value: 'currentStreak' },
         { name: 'Best score', value: 'bestScore' },
         { name: 'Total wordles ', value: 'totalWordles' },
+        { name: 'Hard Mode Wordles Completed', value: 'hardWordlesCompleted' },
         { name: 'Wordles Completed', value: 'wordlesCompleted' },
         { name: 'Wordles Failed', value: 'wordlesFailed' },
       ),
