@@ -289,11 +289,14 @@ export const calculateUpdatedWordleData = (
 ) => {
   // If the user completed the wordle
   if (Number(completed) <= Number(total)) {
+    // defaulting to zero - this will catch new users because we added this field later
+    const hardWordlesCompleted = userData.hardWordlesCompleted ?? 0;
+
     userData.wordlesCompleted++;
     userData.totalWordles++;
     userData.hardWordlesCompleted = isHardMode
-      ? userData.hardWordlesCompleted + 1
-      : userData.hardWordlesCompleted;
+      ? hardWordlesCompleted + 1
+      : hardWordlesCompleted;
     userData.completionGuesses.push(Number(completed));
     userData.averageGuesses = Math.round(
       userData.completionGuesses.reduce((a, b) => a + b) /
