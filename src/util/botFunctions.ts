@@ -146,8 +146,8 @@ export const sortLeaderboard = (wordles: User[], option: string) => {
 
     if (option === 'hardWordlesCompleted') {
       leaderboard = leaderboard.sort((a, b) => {
-        if (a.hardWordlesCompleted > b.hardWordlesCompleted) return 1;
-        if (a.hardWordlesCompleted < b.hardWordlesCompleted) return -1;
+        if (a.hardWordlesCompleted > b.hardWordlesCompleted) return -1;
+        if (a.hardWordlesCompleted < b.hardWordlesCompleted) return 1;
         return 0;
       });
     }
@@ -181,7 +181,7 @@ export const generateLeaderboard = (wordles: User[], option: string) => {
     str += `#${index + 1}. ${user.usernames[0]} - ${user.totalWordles} games (${
       user.percentageCompleted
     }% completed) / ${
-      user.hardWordlesCompleted
+      user.hardWordlesCompleted ?? 0
     } hard games completed / average ${
       user.averageGuesses
     } guesses per game. / current streak: ${user.currentStreak} / best score: ${
@@ -234,7 +234,7 @@ export const generateSimpleLeaderboard = (wordles: User[], option: string) => {
     str += `${index + 1}. ${user.usernames[0]} `;
 
     if (extra != '') {
-      const value = user[option as keyof User];
+      const value = user[option as keyof User] ?? 0;
       str += `- ${value}${extra}\n`;
     }
   });
