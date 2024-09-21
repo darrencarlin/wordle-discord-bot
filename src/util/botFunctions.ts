@@ -268,7 +268,7 @@ export const generateUserStats = (data: User) => {
 };
 
 export const getWordleNumber = (content: Message) => {
-  const wordleNumber = content.content.split(' ')[1];
+  const wordleNumber = content.content.split(' ')[1].replace(',', '');
   if (wordleNumber) {
     return Number(wordleNumber);
   }
