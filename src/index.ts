@@ -8,18 +8,23 @@ import {
 } from 'discord.js';
 import dotenv from 'dotenv';
 import commands from './commands';
+import { achievementsEmbed } from './embeds';
+import { disableNotificationsCommandHandler } from './commands/handlers/disable-notifications';
+import { enableNotificationsCommandHandler } from './commands/handlers/enable-notifications';
+import { exportDataCommandHandler } from './commands/handlers/export-data';
+import { helpCommandHandler } from './commands/handlers/help';
+import { leaderboardCommandHandler } from './commands/handlers/leaderboard';
+import { myAchievementsCommandHandler } from './commands/handlers/my-achievements';
+import { myStatsCommandHandler } from './commands/handlers/my-stats';
+import { purgeUserCommandHandler } from './commands/handlers/purge-user';
+import { resetLeaderboardCommandHandler } from './commands/handlers/reset-leaderboard';
+import { resetUsersCommandHandler } from './commands/handlers/reset-users';
+import { serverStatusCommandHandler } from './commands/handlers/server-status';
+import { setChannelCommandHandler } from './commands/handlers/set-channel';
+import { setRoleCommandHandler } from './commands/handlers/set-role';
+import { simpleLeaderboardCommandHandler } from './commands/handlers/simple-leaderboard';
+import { upgradeServerCommandHandler } from './commands/handlers/upgrade-server';
 import {
-  achievementsEmbed,
-  achievementsListEmbed,
-  helpEmbed,
-  serverStatusEmbed,
-  statsEmbed,
-} from './embeds';
-
-import {
-  generateLeaderboard,
-  generateSimpleLeaderboard,
-  generateUserStats,
   getInteractionCreateVars,
   getMessageCreateVars,
   getUserLeaderboardData,
@@ -32,35 +37,20 @@ import {
 } from './util/botFunctions';
 import {
   COMPLETED_ALREADY_TEXT,
-  EXPORT_DATA_TEXT,
   INVALID_SCORE_TEXT,
   LIMIT_REACHED,
-  NOT_PLAYED_TEXT,
-  NO_PERMISSION_TEXT,
-  PURGE_USER,
-  SET_WORDLE_ADMIN_ROLE,
   SOMETHING_WENT_WRONG_TEXT,
-  UPGRADE_SERVER,
 } from './util/constants';
 import {
   createGuild,
   deleteGuild,
-  disableNotifications,
-  enableNotifications,
   getGuildLeaderboard,
   getGuildWordleChannel,
   getGuildWordles,
-  getUserCount,
-  getWordle,
   incrementWordlesEntered,
   logError,
-  purgeUser,
-  resetLeaderboard,
-  resetUsers,
-  setAdminRole,
-  setWordleChannel,
 } from './util/firebase/firebaseQueries';
-import { DiscordIds } from './util/types';
+import { DiscordIds } from './types';
 
 dotenv.config();
 
@@ -204,201 +194,126 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     } = await getInteractionCreateVars(interaction);
 
     if (commandName === 'set-channel') {
-      if (guildId && channelId) {
-        await setWordleChannel(guildId, channelId, guildName);
-        await interaction.reply({
-          content: 'Wordle channel set!',
-          embeds: [helpEmbed(hasValidPermissions)],
-        });
-      } else {
-        await interaction.reply(SOMETHING_WENT_WRONG_TEXT);
-      }
+      setChannelCommandHandler({
+        interaction,
+        guildId,
+        guildName,
+        channelId,
+        hasValidPermissions,
+      });
     }
 
     if (commandName === 'set-role') {
-      const role = interaction.options.getRole('role');
-      if (hasValidPermissions && role) {
-        await setAdminRole(guildId as string, role.id);
-        await interaction.reply({
-          content: SET_WORDLE_ADMIN_ROLE(role.name),
-          ephemeral: true,
-        });
-      } else {
-        await interaction.reply({
-          content: NO_PERMISSION_TEXT,
-          ephemeral: true,
-        });
-      }
+      setRoleCommandHandler({
+        interaction,
+        guildId,
+        hasValidPermissions,
+      });
     }
 
     if (commandName === 'purge-user') {
-      const member = interaction.options.getUser('user');
-
-      if (hasValidPermissions && member) {
-        await purgeUser(guildId as string, member.id);
-        await interaction.reply({
-          content: PURGE_USER(member.username),
-          ephemeral: true,
-        });
-      }
+      purgeUserCommandHandler({
+        interaction,
+        guildId,
+        hasValidPermissions,
+      });
     }
 
     if (commandName === 'reset-users') {
-      if (hasValidPermissions) {
-        await resetUsers(guildId as string);
-        await interaction.reply('All users have been reset.');
-      } else {
-        await interaction.reply({
-          content: NO_PERMISSION_TEXT,
-          ephemeral: true,
-        });
-      }
+      resetUsersCommandHandler({
+        interaction,
+        guildId,
+        hasValidPermissions,
+      });
     }
 
     if (commandName === 'reset-leaderboard') {
-      if (hasValidPermissions) {
-        await resetLeaderboard(guildId as string);
-        await interaction.reply('The leaderboard has been reset.');
-      } else {
-        await interaction.reply({
-          content: NO_PERMISSION_TEXT,
-          ephemeral: true,
-        });
-      }
+      resetLeaderboardCommandHandler({
+        interaction,
+        guildId,
+        hasValidPermissions,
+      });
     }
 
     if (commandName === 'server-status') {
-      if (hasValidPermissions) {
-        const count = await getUserCount(guildId as string);
-
-        await interaction.reply({
-          embeds: [
-            serverStatusEmbed(
-              count,
-              isPremium,
-              premiumExpires,
-              notifications,
-              isActive,
-            ),
-          ],
-          ephemeral: true,
-        });
-      } else {
-        await interaction.reply({
-          content: NO_PERMISSION_TEXT,
-          ephemeral: true,
-        });
-      }
+      serverStatusCommandHandler({
+        interaction,
+        guildId,
+        hasValidPermissions,
+        isPremium,
+        premiumExpires,
+        notifications,
+        isActive,
+      });
     }
 
     if (commandName === 'upgrade-server') {
-      if (hasValidPermissions) {
-        await interaction.reply({
-          content: UPGRADE_SERVER(guildId as string),
-          ephemeral: true,
-        });
-      } else {
-        await interaction.reply({
-          content: NO_PERMISSION_TEXT,
-          ephemeral: true,
-        });
-      }
+      upgradeServerCommandHandler({
+        interaction,
+        guildId,
+        hasValidPermissions,
+      });
     }
 
     if (commandName === 'enable-notifications') {
-      if (hasValidPermissions) {
-        const option = interaction.options.getString('type') ?? '';
-
-        await enableNotifications(guildId as string, option);
-
-        await interaction.reply({
-          content: `You have enabled ${option} notifications!`,
-          ephemeral: true,
-        });
-      } else {
-        await interaction.reply({
-          content: NO_PERMISSION_TEXT,
-          ephemeral: true,
-        });
-      }
+      enableNotificationsCommandHandler({
+        interaction,
+        guildId,
+        hasValidPermissions,
+      });
     }
 
     if (commandName === 'disable-notifications') {
-      if (hasValidPermissions) {
-        const option = interaction.options.getString('type') ?? '';
-
-        await disableNotifications(guildId as string, option);
-
-        await interaction.reply({
-          content: `You have disabled ${option} notifications!`,
-          ephemeral: true,
-        });
-      } else {
-        await interaction.reply({
-          content: NO_PERMISSION_TEXT,
-          ephemeral: true,
-        });
-      }
+      disableNotificationsCommandHandler({
+        interaction,
+        guildId,
+        hasValidPermissions,
+      });
     }
 
     if (commandName === 'my-stats') {
-      const data = await getWordle(guildId as string, userId);
-      if (data) {
-        const stats = generateUserStats(data);
-        await interaction.reply({
-          embeds: [statsEmbed(stats)],
-          ephemeral: interaction.options.getBoolean('ephemeral') ?? false,
-        });
-      } else {
-        await interaction.reply(NOT_PLAYED_TEXT);
-      }
+      myStatsCommandHandler({
+        interaction,
+        guildId,
+        userId,
+      });
     }
 
     if (commandName === 'my-achievements') {
-      const data = await getWordle(guildId as string, userId);
-      if (data) {
-        await interaction.reply({
-          embeds: [achievementsListEmbed(data)],
-          ephemeral: interaction.options.getBoolean('ephemeral') ?? false,
-        });
-      } else {
-        await interaction.reply(NOT_PLAYED_TEXT);
-      }
+      myAchievementsCommandHandler({
+        interaction,
+        guildId,
+        userId,
+      });
     }
 
     if (commandName === 'leaderboard') {
-      const option = interaction.options.getString('sort') ?? '';
-      const wordles = await getGuildLeaderboard(guildId as string);
-      const leaderboard = generateLeaderboard(wordles, option);
-      await interaction.reply(leaderboard);
+      leaderboardCommandHandler({
+        interaction,
+        guildId,
+      });
     }
 
     if (commandName === 'simple-leaderboard') {
-      const option = interaction.options.getString('sort') ?? '';
-      const wordles = await getGuildLeaderboard(guildId as string);
-      const simpleLeaderboard = generateSimpleLeaderboard(wordles, option);
-      await interaction.reply(simpleLeaderboard);
+      simpleLeaderboardCommandHandler({
+        interaction,
+        guildId,
+      });
     }
 
     if (commandName === 'help') {
-      await interaction.reply({
-        embeds: [helpEmbed(hasValidPermissions)],
-        ephemeral: true,
+      helpCommandHandler({
+        interaction,
+        hasValidPermissions,
       });
     }
 
     if (commandName === 'export-data') {
-      if (hasValidPermissions) {
-        await interaction.reply({
-          content: EXPORT_DATA_TEXT(guildId),
-          ephemeral: true,
-        });
-      } else {
-        await interaction.reply({
-          content: NO_PERMISSION_TEXT,
-          ephemeral: true,
-        });
-      }
+      exportDataCommandHandler({
+        interaction,
+        guildId,
+        hasValidPermissions,
+      });
     }
 
     console.log(`COMMAND: Time taken: ${new Date().getTime() - time}ms`);

@@ -1,4 +1,4 @@
-import { Achievement, NewUser, User } from './types';
+import { Achievement, NewUser, User } from '../types';
 
 export const POPULATE_USER = (user: User | NewUser): User => {
   const achievements: Achievement[] = [
@@ -210,7 +210,7 @@ export const POPULATE_USER = (user: User | NewUser): User => {
   };
 };
 
-export const SERVER_LIMIT = 10;
+export const SERVER_LIMIT = 5;
 
 export const DEFAULT_NOTIFICATIONS = {
   achievements: true,

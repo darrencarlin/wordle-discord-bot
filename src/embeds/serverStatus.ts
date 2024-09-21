@@ -1,7 +1,7 @@
 // at the top of your file
 import { EmbedBuilder } from 'discord.js';
 import { SERVER_LIMIT } from '../util/constants';
-import { Notifications } from '../util/types';
+import { Notifications } from '../types';
 import { capitalizeEachWord } from '../util/utilfunctions';
 
 const serverStatusEmbed = (

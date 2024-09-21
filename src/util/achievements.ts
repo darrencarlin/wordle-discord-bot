@@ -1,5 +1,5 @@
 import { countCompletedAchievements } from './botFunctions';
-import { User } from './types';
+import { User } from '../types';
 
 // both of these arrays need to be the same length and have the correct
 // corresponding achievement check

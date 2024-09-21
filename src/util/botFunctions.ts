@@ -13,7 +13,7 @@ import {
   UpdateLeaderboardDataProps,
   UpdateUserDataProps,
   User,
-} from './types';
+} from '../types';
 import {
   getAdminRoleId,
   getGuildData,

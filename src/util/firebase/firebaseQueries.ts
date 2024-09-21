@@ -1,6 +1,6 @@
 import { db } from './firebaseAdmin';
 import { DEFAULT_NOTIFICATIONS } from '../constants';
-import { User } from '../types';
+import { User } from '../../types';
 
 // potentially add an option to choose what you need... minimzing calls to db
 export const getGuildData = async (id: string) => {
@@ -273,4 +273,26 @@ export const addNewFieldToUsersAndLeaderboards = async ({
     // Commit the batch for the current guild
     await batch.commit();
   });
+};
+
+export const testFunc = async () => {
+  let count = 0;
+  const guildsSnapshot = await db.collection('guilds').get();
+
+  const guildPromises = guildsSnapshot.docs.map(async (guild) => {
+    const guildId = guild.id;
+    const usersSnapshot = await db.collection(`guilds/${guildId}/users`).get();
+
+    const userPromises = usersSnapshot.docs.map(async (user) => {
+      const userData = user.data();
+      console.log(userData.totalWordles);
+      count += userData?.totalWordles;
+    });
+
+    await Promise.all(userPromises);
+  });
+
+  await Promise.all(guildPromises);
+
+  return count;
 };

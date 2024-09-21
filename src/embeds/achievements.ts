@@ -1,6 +1,6 @@
 // at the top of your file
 import { EmbedBuilder } from 'discord.js';
-import { Achievement, User } from '../util/types';
+import { Achievement, User } from '../types';
 import { BANNER_IMAGE } from '../util/constants';
 import { countCompletedAchievements } from '../util/botFunctions';
 
