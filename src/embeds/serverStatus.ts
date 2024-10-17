@@ -1,7 +1,7 @@
 // at the top of your file
 import { EmbedBuilder } from 'discord.js';
-import { SERVER_LIMIT } from '../util/constants';
 import { Notifications } from '../types';
+import { SERVER_LIMIT } from '../util/constants';
 import { capitalizeEachWord } from '../util/utilfunctions';
 
 const serverStatusEmbed = (
@@ -29,7 +29,7 @@ const serverStatusEmbed = (
     .addFields({
       name: isActive ? 'Premium Renews: ' : 'Premium Expires: ',
       value:
-        premiumExpires === 0 ? 'Never' : new Date(premiumExpires).toUTCString(),
+        premiumExpires === 0 ? 'Never' : new Date(premiumExpires * 1000).toUTCString(),
     });
 
   Object.keys(notifications).forEach((key) => {
