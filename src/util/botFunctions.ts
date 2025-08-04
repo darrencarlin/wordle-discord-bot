@@ -80,6 +80,40 @@ export const getInteractionCreateVars = async (
 export const isRegularMessage = (content: Message) =>
   content.author.bot || !content.content.trim().startsWith('Wordle ');
 
+export const sanitizeUserData = (userData: User): User => {
+  // Fix any NaN values that might exist in the data
+  if (isNaN(userData.bestScore)) {
+    userData.bestScore = 0;
+  }
+  if (isNaN(userData.averageGuesses)) {
+    userData.averageGuesses = 0;
+  }
+  if (isNaN(userData.currentStreak)) {
+    userData.currentStreak = 0;
+  }
+  if (isNaN(userData.longestStreak)) {
+    userData.longestStreak = 0;
+  }
+  if (isNaN(userData.percentageCompleted)) {
+    userData.percentageCompleted = 0;
+  }
+  if (isNaN(userData.percentageFailed)) {
+    userData.percentageFailed = 0;
+  }
+
+  // Remove any NaN values from completion guesses array
+  userData.completionGuesses = userData.completionGuesses.filter(guess => !isNaN(guess));
+
+  // Recalculate average if completionGuesses was cleaned
+  if (userData.completionGuesses.length > 0) {
+    userData.averageGuesses = Math.round(
+      userData.completionGuesses.reduce((a, b) => a + b) / userData.completionGuesses.length,
+    );
+  }
+
+  return userData;
+};
+
 export const getUserWordleData = (
   wordles: User[],
   id: string,
@@ -88,7 +122,8 @@ export const getUserWordleData = (
   const user = wordles.find((user) => user.userId === id);
 
   if (user) {
-    return { ...POPULATE_USER(user), ...user };
+    const populatedUser = { ...POPULATE_USER(user), ...user };
+    return sanitizeUserData(populatedUser);
   }
 
   const newUser = { userId: id, usernames: [username] };
@@ -105,7 +140,10 @@ export const getUserLeaderboardData = (
 ) => {
   const user = leaderboards.find((user) => user.userId === id);
 
-  if (user) return { ...POPULATE_USER(user), ...user };
+  if (user) {
+    const populatedUser = { ...POPULATE_USER(user), ...user };
+    return sanitizeUserData(populatedUser);
+  }
 
   const newUser = { userId: id, usernames: [username] };
 
@@ -287,8 +325,8 @@ export const calculateUpdatedWordleData = (
   isHardMode: boolean,
   userData: User,
 ) => {
-  // If the user completed the wordle
-  if (Number(completed) <= Number(total)) {
+  // If the user completed the wordle (not failed with 'X')
+  if (completed !== 'X' && completed !== 'x' && Number(completed) <= Number(total)) {
     // defaulting to zero - this will catch new users because we added this field later
     const hardWordlesCompleted = userData.hardWordlesCompleted;
 
@@ -304,7 +342,7 @@ export const calculateUpdatedWordleData = (
     );
   }
   // If the user failed the wordle
-  if (completed === 'X') {
+  if (completed === 'X' || completed === 'x') {
     userData.wordlesFailed++;
     userData.totalWordles++;
   }
@@ -354,12 +392,20 @@ export const calculateStreak = (
 };
 
 export const calculateBestScore = (completed: string, userData: User) => {
-  if (Number(completed) < userData.bestScore || userData.bestScore === 0) {
-    userData.bestScore = Number(completed);
+  // Only update best score if the user completed the wordle (not 'X')
+  if (completed !== 'X' && completed !== 'x') {
+    const completedNumber = Number(completed);
+    if (completedNumber < userData.bestScore || userData.bestScore === 0) {
+      userData.bestScore = completedNumber;
+    }
   }
 
-  if (Number(completed)) {
-    userData.scores[Number(completed) - 1]++;
+  // Only update scores array if the user completed the wordle
+  if (completed !== 'X' && completed !== 'x') {
+    const completedNumber = Number(completed);
+    if (completedNumber >= 1 && completedNumber <= 6) {
+      userData.scores[completedNumber - 1]++;
+    }
   }
 
   return userData;
