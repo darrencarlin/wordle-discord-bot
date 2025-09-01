@@ -213,6 +213,32 @@ export const incrementWordlesEntered = async () => {
     .set({ count: count + 1 }, { merge: true });
 };
 
+export const incrementServersJoined = async () => {
+  const total = await db
+    .collection('servers')
+    .doc('zf3gr1vv3uFAQhWD3FVR')
+    .get();
+  const totalData = total.data();
+  const count = totalData?.count;
+  await db
+    .collection('servers')
+    .doc('zf3gr1vv3uFAQhWD3FVR')
+    .set({ count: count + 1 }, { merge: true });
+};
+
+export const decrementServersJoined = async () => {
+  const total = await db
+    .collection('servers')
+    .doc('zf3gr1vv3uFAQhWD3FVR')
+    .get();
+  const totalData = total.data();
+  const count = totalData?.count;
+  await db
+    .collection('servers')
+    .doc('zf3gr1vv3uFAQhWD3FVR')
+    .set({ count: count - 1 }, { merge: true });
+};
+
 interface Field {
   name: string;
   value: string | number | boolean;

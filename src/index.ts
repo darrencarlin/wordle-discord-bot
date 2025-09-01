@@ -43,10 +43,12 @@ import {
 } from './util/constants';
 import {
   createGuild,
+  decrementServersJoined,
   deleteGuild,
   getGuildLeaderboard,
   getGuildWordleChannel,
   getGuildWordles,
+  incrementServersJoined,
   incrementWordlesEntered,
   logError,
 } from './util/firebase/firebaseQueries';
@@ -71,11 +73,13 @@ client.on('ready', () => {
 client.on('guildCreate', async (guild) => {
   console.log(`Joined guild ${guild.name}`);
   await createGuild(guild.id, guild.name);
+  await incrementServersJoined();
 });
 
 client.on('guildDelete', async (guild) => {
   console.log(`Left guild ${guild.name}`);
   await deleteGuild(guild.id);
+  await decrementServersJoined();
 });
 
 client.on('messageCreate', async (content: Message) => {
