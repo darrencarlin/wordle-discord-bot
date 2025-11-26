@@ -4,6 +4,7 @@ import {
   GatewayIntentBits,
   Interaction,
   Message,
+  MessageFlags,
   Routes,
 } from 'discord.js';
 import dotenv from 'dotenv';
@@ -324,7 +325,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
   } catch (error) {
     await interaction.reply({
       content: SOMETHING_WENT_WRONG_TEXT,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
     logError((error as Error).message, 'interactionCreate');
   }

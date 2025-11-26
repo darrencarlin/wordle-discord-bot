@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
 import {
   NO_PERMISSION_TEXT,
   SET_WORDLE_ADMIN_ROLE,
@@ -22,13 +22,13 @@ export const setRoleCommandHandler = async ({
   if (!isValid) {
     return await interaction.reply({
       content: NO_PERMISSION_TEXT,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 
   await setAdminRole(guildId as string, role.id);
   await interaction.reply({
     content: SET_WORDLE_ADMIN_ROLE(role.name),
-    ephemeral: true,
+    flags: MessageFlags.Ephemeral,
   });
 };

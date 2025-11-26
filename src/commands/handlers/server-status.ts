@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
 import { serverStatusEmbed } from '../../embeds';
 import { NO_PERMISSION_TEXT } from '../../util/constants';
 import { getUserCount } from '../../util/firebase/firebaseQueries';
@@ -36,12 +36,12 @@ export const serverStatusCommandHandler = async ({
           isActive,
         ),
       ],
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   } else {
     await interaction.reply({
       content: NO_PERMISSION_TEXT,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 };

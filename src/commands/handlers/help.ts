@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
 import { helpEmbed } from '../../embeds';
 
 interface Props {
@@ -12,6 +12,6 @@ export const helpCommandHandler = async ({
 }: Props) => {
   await interaction.reply({
     embeds: [helpEmbed(hasValidPermissions)],
-    ephemeral: true,
+    flags: MessageFlags.Ephemeral,
   });
 };

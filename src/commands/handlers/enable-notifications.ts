@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
 import { enableNotifications } from '../../util/firebase/firebaseQueries';
 import { NO_PERMISSION_TEXT } from '../../util/constants';
 
@@ -20,12 +20,12 @@ export const enableNotificationsCommandHandler = async ({
 
     await interaction.reply({
       content: `You have enabled ${option} notifications!`,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   } else {
     await interaction.reply({
       content: NO_PERMISSION_TEXT,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 };

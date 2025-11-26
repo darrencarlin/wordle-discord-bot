@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
 import { PURGE_USER } from '../../util/constants';
 import { purgeUser } from '../../util/firebase/firebaseQueries';
 
@@ -19,7 +19,7 @@ export const purgeUserCommandHandler = async ({
     await purgeUser(guildId as string, member.id);
     await interaction.reply({
       content: PURGE_USER(member.username),
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 };

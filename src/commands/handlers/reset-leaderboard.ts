@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
 import { NO_PERMISSION_TEXT } from '../../util/constants';
 import { resetLeaderboard } from '../../util/firebase/firebaseQueries';
 
@@ -19,7 +19,7 @@ export const resetLeaderboardCommandHandler = async ({
   } else {
     await interaction.reply({
       content: NO_PERMISSION_TEXT,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 };

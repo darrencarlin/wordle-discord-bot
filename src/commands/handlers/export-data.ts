@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
 import { EXPORT_DATA_TEXT, NO_PERMISSION_TEXT } from '../../util/constants';
 
 interface Props {
@@ -15,12 +15,12 @@ export const exportDataCommandHandler = async ({
   if (hasValidPermissions) {
     await interaction.reply({
       content: EXPORT_DATA_TEXT(guildId),
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   } else {
     await interaction.reply({
       content: NO_PERMISSION_TEXT,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 };
