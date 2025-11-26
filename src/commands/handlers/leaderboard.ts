@@ -14,5 +14,16 @@ export const leaderboardCommandHandler = async ({
   const option = interaction.options.getString('sort') ?? '';
   const wordles = await getGuildLeaderboard(guildId as string);
   const leaderboard = generateLeaderboard(wordles, option);
-  await interaction.reply(leaderboard);
+  
+  // Handle multiple chunks if leaderboard exceeds Discord's 2000 character limit
+  if (Array.isArray(leaderboard)) {
+    // Send first message as reply
+    await interaction.reply(leaderboard[0]);
+    // Send remaining chunks as follow-ups
+    for (let i = 1; i < leaderboard.length; i++) {
+      await interaction.followUp(leaderboard[i]);
+    }
+  } else {
+    await interaction.reply(leaderboard);
+  }
 };

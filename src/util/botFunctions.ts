@@ -210,13 +210,19 @@ export const sortLeaderboard = (wordles: User[], option: string) => {
   return leaderboard;
 };
 
-export const generateLeaderboard = (wordles: User[], option: string) => {
+export const generateLeaderboard = (wordles: User[], option: string): string | string[] => {
   const leaderboard = sortLeaderboard(wordles, option);
 
-  let str = '```';
+  if (leaderboard.length === 0) {
+    return NO_LEADERBOARD_DATA;
+  }
+
+  const DISCORD_MAX_LENGTH = 2000;
+  const chunks: string[] = [];
+  let currentChunk = '```';
 
   leaderboard?.forEach((user, index) => {
-    str += `#${index + 1}. ${user.usernames[0]} - ${user.totalWordles} games (${
+    const entry = `#${index + 1}. ${user.usernames[0]} - ${user.totalWordles} games (${
       user.percentageCompleted
     }% completed) / ${
       user.hardWordlesCompleted
@@ -225,15 +231,24 @@ export const generateLeaderboard = (wordles: User[], option: string) => {
     } guesses per game. / current streak: ${user.currentStreak} / best score: ${
       user.bestScore
     }\n`;
+
+    // Check if adding this entry would exceed the limit (accounting for closing ```)
+    if (currentChunk.length + entry.length + 3 > DISCORD_MAX_LENGTH) {
+      // Close current chunk and start a new one
+      currentChunk += '```';
+      chunks.push(currentChunk);
+      currentChunk = '```' + entry;
+    } else {
+      currentChunk += entry;
+    }
   });
 
-  str += '```';
+  // Close the last chunk
+  currentChunk += '```';
+  chunks.push(currentChunk);
 
-  if (str === '``````') {
-    return NO_LEADERBOARD_DATA;
-  }
-
-  return str;
+  // Return single string if only one chunk, otherwise return array
+  return chunks.length === 1 ? chunks[0] : chunks;
 };
 
 export const generateSimpleLeaderboard = (wordles: User[], option: string) => {
